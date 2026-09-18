@@ -1,9 +1,10 @@
 /**
- * ACADEMIX SENA - Standalone HTML5/JS Application Engine
- * Gestión de Fichas, Asistencia, Juicios RAPs, Llamados de Atención y Storage de Fotos
+ * =========================================================================
+ * ACADEMIX SENA - Realtime Engine & Supabase Storage Integration
+ * =========================================================================
  */
 
-// ================= SUPABASE CLIENT CONFIGURATION =================
+// Supabase Connection Credentials (Real project database)
 const SUPABASE_URL = 'https://gusbmqyaiacyllexfkkc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_rCcY7oDdFQ7up5W4QGuACA_zdHJezBo';
 
@@ -11,234 +12,264 @@ let supabaseClient = null;
 if (typeof supabase !== 'undefined' && supabase.createClient) {
   try {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase JS Client initialized successfully.');
+    console.log('✅ Supabase Client v2 conectado a:', SUPABASE_URL);
   } catch (err) {
-    console.warn('Supabase initialization fallback:', err);
+    console.warn('Aviso conexión Supabase:', err);
   }
 }
 
-// ================= APPLICATION STATE =================
-const STATE = {
-  currentRole: 'instructor', // 'instructor' | 'aprendiz'
-  currentLearnerDoc: '1001234567',
+// Global Application State
+const APP_STATE = {
+  isLoggedIn: false,
+  currentUserRole: 'instructor', // 'instructor' | 'aprendiz' | 'admin'
+  currentUserNombre: 'Zahedys Manuel Rodriguez Villarreal',
+  currentUserDoc: '8787499',
+  
+  // Fichas
   fichas: [
     {
-      codigo: '2670142',
+      codigo: '2694110',
       programa: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)',
-      jornada: 'Diurna',
-      ambiente: 'Ambiente de Sistemas 204',
-      instructorLider: 'Ing. Carlos Rodríguez',
+      jornada: 'Jornada Tarde (12:00m - 6:00pm)',
+      ambiente: 'Ambiente de Sistemas 302',
+      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
       centroFormacion: 'Centro de Servicios y Gestión Empresarial',
-      regional: 'Antioquia'
+      regional: 'Regional Antioquia'
     },
     {
-      codigo: '2560311',
-      programa: 'Tecnólogo en Animación 3D y Modelado Digital',
-      jornada: 'Mixta',
-      ambiente: 'Laboratorio de Render 102',
-      instructorLider: 'Ing. Carlos Rodríguez',
+      codigo: '2718902',
+      programa: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)',
+      jornada: 'Jornada Mañana (6:00am - 12:00m)',
+      ambiente: 'Ambiente 204 - Software',
+      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
       centroFormacion: 'Centro de Servicios y Gestión Empresarial',
-      regional: 'Antioquia'
+      regional: 'Regional Antioquia'
+    },
+    {
+      codigo: '2540193',
+      programa: 'Tecnólogo en Animación 3D y Modelado Digital',
+      jornada: 'Jornada Mixta',
+      ambiente: 'Laboratorio de Render',
+      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
+      centroFormacion: 'Centro de Servicios y Gestión Empresarial',
+      regional: 'Regional Antioquia'
     }
   ],
-  currentFichaCode: '2670142',
+  currentFichaCodigo: '2694110',
+  
+  // Real Records
   aprendices: [],
   competencias: [],
-  asistencias: {}, // { "2026-09-18": { "1001234567": "presente", ... } }
-  calificaciones: {}, // { "1001234567_RAP1": { estado: "aprobado", feedback: "..." } }
+  asistencias: {}, // { '2026-09-18': { '1001234567': 'presente', ... } }
+  calificaciones: {}, // { '1001234567_RAP1': { estado: 'aprobado', feedback: '' } }
   llamados: [],
+  
+  // Instructor Profile
   instructorProfile: {
-    nombres: 'Carlos',
-    apellidos: 'Rodríguez',
-    documento: '71234567',
-    email: 'carlos.rodriguez@sena.edu.co',
-    cargo: 'Instructor Técnico Líder ADSO',
+    nombres: 'Zahedys Manuel',
+    apellidos: 'Rodriguez Villarreal',
+    documento: '8787499',
+    email: 'instructor@sena.edu.co',
+    cargo: 'Instructor Líder de Formación ADSO',
     centroFormacion: 'Centro de Servicios y Gestión Empresarial',
     foto: '',
-    firmaDigital: 'Ing. Carlos Rodríguez'
+    firmaDigital: 'Zahedys Manuel Rodriguez Villarreal'
   }
 };
 
-// Default Sample Learners (Used if database is empty initially)
-const DEFAULT_APRENDICES = [
-  { id: '1', documento: '1001234567', nombres: 'Juan David', apellidos: 'Pérez Gómez', correo: 'juan.perez@misena.edu.co', password: '1001234567', estado: 'activo', foto: '' },
-  { id: '2', documento: '1002345678', nombres: 'María Camila', apellidos: 'González Restrepo', correo: 'maria.gonzalez@misena.edu.co', password: '1002345678', estado: 'activo', foto: '' },
-  { id: '3', documento: '1003456789', nombres: 'Andrés Felipe', apellidos: 'Martínez López', correo: 'andres.martinez@misena.edu.co', password: '1003456789', estado: 'activo', foto: '' },
-  { id: '4', documento: '1004567890', nombres: 'Laura Sofía', apellidos: 'Rodríguez Castro', correo: 'laura.rodriguez@misena.edu.co', password: '1004567890', estado: 'activo', foto: '' },
-  { id: '5', documento: '1005678901', nombres: 'Mateo', apellidos: 'Ospina Ramírez', correo: 'mateo.ospina@misena.edu.co', password: '1005678901', estado: 'activo', foto: '' }
-];
-
-const DEFAULT_COMPETENCIAS = [
+// Fallback Initial Competencias and Learner data (if database was freshly created)
+const SEED_COMPETENCIAS = [
   {
     codigo: '220501096',
-    nombre: 'Desarrollar la estructura de datos y lógica del software',
+    nombre: 'Desarrollar la estructura de datos y la lógica del software según especificaciones técnicas',
     horas: 180,
+    estado: 'Activo',
     resultados: [
-      { id: 'RAP1', codigo: 'RAP-01', descripcion: 'Diseñar la base de datos relacional de acuerdo con los requerimientos del sistema.' },
-      { id: 'RAP2', codigo: 'RAP-02', descripcion: 'Construir la capa de persistencia y consultas SQL optimizadas.' }
+      { id: 'RAP1', codigo: 'RAP-01', descripcion: 'Diseñar la base de datos relacional y definir modelos de entidad relación de acuerdo a los requerimientos.' },
+      { id: 'RAP2', codigo: 'RAP-02', descripcion: 'Construir la capa de persistencia mediante consultas SQL optimizadas y procedimientos almacenados.' }
     ]
   },
   {
     codigo: '220501097',
-    nombre: 'Implementar la arquitectura frontend según lineamientos de diseño',
+    nombre: 'Implementar la arquitectura frontend según lineamientos de diseño y experiencia de usuario',
     horas: 160,
+    estado: 'Activo',
     resultados: [
-      { id: 'RAP3', codigo: 'RAP-03', descripcion: 'Maquetar interfaces de usuario accesibles y adaptables a dispositivos móviles.' },
-      { id: 'RAP4', codigo: 'RAP-04', descripcion: 'Integrar componentes interactivos y consumo de servicios web API REST.' }
+      { id: 'RAP3', codigo: 'RAP-03', descripcion: 'Maquetar interfaces de usuario accesibles y adaptables a diferentes pantallas y resoluciones.' },
+      { id: 'RAP4', codigo: 'RAP-04', descripcion: 'Integrar componentes interactivos y gestionar consumo de servicios web API REST.' }
     ]
   }
 ];
 
-// ================= STORAGE PERSISTENCE (LOCAL + SUPABASE) =================
-function loadLocalState() {
-  try {
-    const saved = localStorage.getItem('academix_sena_html_state');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      STATE.fichas = parsed.fichas || STATE.fichas;
-      STATE.currentFichaCode = parsed.currentFichaCode || STATE.currentFichaCode;
-      STATE.aprendices = parsed.aprendices && parsed.aprendices.length ? parsed.aprendices : DEFAULT_APRENDICES;
-      STATE.competencias = parsed.competencias && parsed.competencias.length ? parsed.competencias : DEFAULT_COMPETENCIAS;
-      STATE.asistencias = parsed.asistencias || {};
-      STATE.calificaciones = parsed.calificaciones || {};
-      STATE.llamados = parsed.llamados || [];
-      STATE.instructorProfile = parsed.instructorProfile || STATE.instructorProfile;
-      STATE.currentRole = parsed.currentRole || 'instructor';
-      STATE.currentLearnerDoc = parsed.currentLearnerDoc || '1001234567';
-    } else {
-      STATE.aprendices = DEFAULT_APRENDICES;
-      STATE.competencias = DEFAULT_COMPETENCIAS;
-    }
-  } catch (e) {
-    console.error('Error loading local state:', e);
-    STATE.aprendices = DEFAULT_APRENDICES;
-    STATE.competencias = DEFAULT_COMPETENCIAS;
-  }
-}
-
-function saveLocalState() {
-  try {
-    localStorage.setItem('academix_sena_html_state', JSON.stringify({
-      fichas: STATE.fichas,
-      currentFichaCode: STATE.currentFichaCode,
-      aprendices: STATE.aprendices,
-      competencias: STATE.competencias,
-      asistencias: STATE.asistencias,
-      calificaciones: STATE.calificaciones,
-      llamados: STATE.llamados,
-      instructorProfile: STATE.instructorProfile,
-      currentRole: STATE.currentRole,
-      currentLearnerDoc: STATE.currentLearnerDoc
-    }));
-  } catch (e) {
-    console.error('Error saving local state:', e);
-  }
-}
-
-// ================= SUPABASE CLOUD OPERATIONS =================
-async function syncDataWithSupabase() {
-  if (!supabaseClient) return { success: false, message: 'Cliente Supabase no disponible.' };
+// =========================================================================
+// 1. SUPABASE REAL DATABASE FETCHING & SYNCING
+// =========================================================================
+async function fetchRealDataFromSupabase() {
+  if (!supabaseClient) return;
 
   try {
-    // 1. Fetch current ficha aprendices
-    const { data: aprendicesDb, error: apErr } = await supabaseClient
-      .from('aprendices')
-      .select('*')
-      .eq('ficha_codigo', STATE.currentFichaCode);
-
-    if (!apErr && aprendicesDb && aprendicesDb.length > 0) {
-      STATE.aprendices = aprendicesDb.map(a => ({
-        id: a.id || a.documento,
-        documento: a.documento,
-        nombres: a.nombres,
-        apellidos: a.apellidos || '',
-        correo: a.correo || a.email || '',
-        password: a.password || a.documento,
-        estado: a.estado || 'activo',
-        foto: a.foto || ''
-      }));
-    }
-
-    // 2. Fetch instructor profile
-    const { data: instData } = await supabaseClient
+    console.log('🔄 Conectando con Supabase para obtener información real...');
+    
+    // 1. Fetch Instructor Profile
+    const { data: instData, error: instErr } = await supabaseClient
       .from('instructores')
       .select('*')
       .limit(1);
 
-    if (instData && instData.length > 0) {
-      const i = instData[0];
-      STATE.instructorProfile = {
-        nombres: i.nombres || STATE.instructorProfile.nombres,
-        apellidos: i.apellidos || STATE.instructorProfile.apellidos,
-        documento: i.documento || STATE.instructorProfile.documento,
-        email: i.email || STATE.instructorProfile.email,
-        cargo: i.cargo || STATE.instructorProfile.cargo,
-        centroFormacion: i.centro_formacion || STATE.instructorProfile.centroFormacion,
-        foto: i.foto || STATE.instructorProfile.foto,
-        firmaDigital: i.firma_digital || STATE.instructorProfile.firmaDigital
+    if (!instErr && instData && instData.length > 0) {
+      const dbInst = instData[0];
+      APP_STATE.instructorProfile = {
+        nombres: dbInst.nombres || APP_STATE.instructorProfile.nombres,
+        apellidos: dbInst.apellidos || APP_STATE.instructorProfile.apellidos,
+        documento: dbInst.documento || APP_STATE.instructorProfile.documento,
+        email: dbInst.email || APP_STATE.instructorProfile.email,
+        cargo: dbInst.cargo || APP_STATE.instructorProfile.cargo,
+        centroFormacion: dbInst.centro_formacion || APP_STATE.instructorProfile.centroFormacion,
+        foto: dbInst.foto || APP_STATE.instructorProfile.foto,
+        firmaDigital: dbInst.firma_digital || `${dbInst.nombres} ${dbInst.apellidos}`
       };
+      APP_STATE.currentUserNombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
     }
 
-    saveLocalState();
+    // 2. Fetch Fichas
+    const { data: fichasData, error: fichasErr } = await supabaseClient
+      .from('fichas')
+      .select('*');
+
+    if (!fichasErr && fichasData && fichasData.length > 0) {
+      APP_STATE.fichas = fichasData.map(f => ({
+        codigo: f.codigo,
+        programa: f.programa || 'Tecnólogo en ADSO',
+        jornada: f.jornada || 'Jornada Tarde',
+        ambiente: f.ambiente || 'Ambiente de Formación',
+        instructorLider: APP_STATE.currentUserNombre,
+        centroFormacion: APP_STATE.instructorProfile.centroFormacion,
+        regional: 'Regional Antioquia'
+      }));
+    }
+
+    // 3. Fetch Aprendices for active ficha
+    const { data: apData, error: apErr } = await supabaseClient
+      .from('aprendices')
+      .select('*');
+
+    if (!apErr && apData && apData.length > 0) {
+      APP_STATE.aprendices = apData.map(a => ({
+        id: a.id || a.documento,
+        documento: a.documento,
+        nombres: a.nombres,
+        apellidos: a.apellidos || '',
+        correo: a.email || a.correo || `${a.documento}@misena.edu.co`,
+        usuario: a.usuario || a.documento,
+        password: a.password || a.contrasena || a.documento,
+        estado: a.estado_matricula || a.estado || 'En Formación',
+        foto: a.foto || '',
+        rachaAsistencia: Number(a.racha_asistencia || 100),
+        fallasConsecutivas: Number(a.fallas_consecutivas || 0)
+      }));
+    }
+
+    // 4. Fetch Competencias
+    const { data: compData } = await supabaseClient.from('competencias').select('*');
+    if (compData && compData.length > 0) {
+      APP_STATE.competencias = compData;
+    } else {
+      APP_STATE.competencias = SEED_COMPETENCIAS;
+    }
+
+    // 5. Fetch Llamados de atención
+    const { data: llamData } = await supabaseClient.from('llamados_atencion').select('*');
+    if (llamData && llamData.length > 0) {
+      APP_STATE.llamados = llamData.map(l => ({
+        id: l.id,
+        numeroActa: l.numero_acta || `ACTA-${new Date().getFullYear()}-001`,
+        aprendizDocumento: l.aprendiz_documento,
+        aprendizNombre: l.aprendiz_nombre,
+        tipo: l.tipo,
+        fecha: l.fecha,
+        motivo: l.motivo,
+        compromiso: l.compromiso,
+        estado: l.estado || 'pendiente'
+      }));
+    }
+
+    saveToLocalStorage();
     renderAllViews();
-    return { success: true, message: `Sincronizados ${STATE.aprendices.length} aprendices desde Supabase.` };
+    console.log('✅ Base de datos Supabase sincronizada con éxito.');
   } catch (err) {
-    console.warn('Supabase fetch notice:', err);
-    return { success: false, message: err.message };
+    console.error('Error al sincronizar con Supabase:', err);
   }
 }
 
-async function pushDataToSupabase() {
-  if (!supabaseClient) return { success: false, message: 'Cliente Supabase no configurado.' };
+async function syncDataToSupabase() {
+  if (!supabaseClient) {
+    alert('Cliente Supabase no configurado.');
+    return;
+  }
+
+  const alertBox = document.getElementById('supabase-sync-alert');
+  if (alertBox) {
+    alertBox.classList.remove('hidden');
+    alertBox.textContent = 'Enviando información a Supabase (PostgreSQL)...';
+  }
 
   try {
-    // 1. Upsert Ficha
     const currentFicha = getCurrentFicha();
+
+    // 1. Upsert Ficha
     await supabaseClient.from('fichas').upsert({
       codigo: currentFicha.codigo,
       programa: currentFicha.programa,
       jornada: currentFicha.jornada,
-      ambiente: currentFicha.ambiente,
-      instructor_lider: currentFicha.instructorLider
+      ambiente: currentFicha.ambiente
     }, { onConflict: 'codigo' });
 
-    // 2. Upsert Aprendices with passwords
-    const records = STATE.aprendices.map(a => ({
-      documento: a.documento,
-      nombres: a.nombres,
-      apellidos: a.apellidos || '',
-      correo: a.correo || '',
-      password: a.password || a.documento,
-      estado: a.estado || 'activo',
-      ficha_codigo: currentFicha.codigo,
-      foto: a.foto || null
-    }));
+    // 2. Upsert Aprendices
+    if (APP_STATE.aprendices.length > 0) {
+      const learnersPayload = APP_STATE.aprendices.map(a => ({
+        documento: a.documento,
+        nombres: a.nombres,
+        apellidos: a.apellidos || '',
+        email: a.correo,
+        usuario: a.documento,
+        password: a.password || a.documento,
+        estado_matricula: a.estado || 'En Formación',
+        foto: a.foto || null
+      }));
 
-    const { error: apErr } = await supabaseClient.from('aprendices').upsert(records, { onConflict: 'documento' });
-    if (apErr) throw apErr;
+      await supabaseClient.from('aprendices').upsert(learnersPayload, { onConflict: 'documento' });
+    }
 
-    // 3. Upsert Instructor Profile
+    // 3. Upsert Instructor
     await supabaseClient.from('instructores').upsert({
-      documento: STATE.instructorProfile.documento,
-      nombres: STATE.instructorProfile.nombres,
-      apellidos: STATE.instructorProfile.apellidos,
-      email: STATE.instructorProfile.email,
-      cargo: STATE.instructorProfile.cargo,
-      centro_formacion: STATE.instructorProfile.centroFormacion,
-      foto: STATE.instructorProfile.foto || null,
-      firma_digital: STATE.instructorProfile.firmaDigital
+      documento: APP_STATE.instructorProfile.documento,
+      nombres: APP_STATE.instructorProfile.nombres,
+      apellidos: APP_STATE.instructorProfile.apellidos,
+      email: APP_STATE.instructorProfile.email,
+      cargo: APP_STATE.instructorProfile.cargo,
+      centro_formacion: APP_STATE.instructorProfile.centroFormacion,
+      foto: APP_STATE.instructorProfile.foto || null,
+      firma_digital: APP_STATE.instructorProfile.firmaDigital
     }, { onConflict: 'documento' });
 
-    return { success: true, message: `¡${STATE.aprendices.length} aprendices y ficha sincronizados en Supabase!` };
+    if (alertBox) {
+      alertBox.textContent = `¡Sincronización exitosa! ${APP_STATE.aprendices.length} aprendices y ficha guardados en Supabase.`;
+    }
+    alert(`¡Sincronización exitosa con Supabase! ${APP_STATE.aprendices.length} aprendices registrados.`);
   } catch (err) {
-    return { success: false, message: `Aviso al enviar: ${err.message}` };
+    if (alertBox) alertBox.textContent = `Aviso: ${err.message}`;
+    alert(`Aviso de Supabase: ${err.message}`);
   }
 }
 
-// Upload file directly to Supabase Storage Bucket 'perfiles'
-async function uploadPhotoToSupabaseStorage(file, folderPrefix = 'general') {
+async function syncDataFromSupabase() {
+  await fetchRealDataFromSupabase();
+  alert('¡Datos actualizados desde la base de datos Supabase!');
+}
+
+// Upload direct file to Supabase Storage Bucket 'perfiles'
+async function uploadToSupabaseStorage(file, folder = 'general') {
   if (!supabaseClient) {
-    // Fallback to local Base64
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true });
@@ -248,53 +279,288 @@ async function uploadPhotoToSupabaseStorage(file, folderPrefix = 'general') {
 
   try {
     const ext = file.name.split('.').pop();
-    const fileName = `${folderPrefix}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
     const { data, error } = await supabaseClient.storage
       .from('perfiles')
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
     if (error) {
-      console.warn('Supabase storage fallback to dataUrl:', error.message);
+      console.warn('Supabase storage fallback:', error.message);
       return new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true, warning: error.message });
+        reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true });
         reader.readAsDataURL(file);
       });
     }
 
-    const { data: publicUrlData } = supabaseClient.storage.from('perfiles').getPublicUrl(data.path);
-    return { success: true, url: publicUrlData.publicUrl, isLocal: false };
+    const { data: urlData } = supabaseClient.storage.from('perfiles').getPublicUrl(data.path);
+    return { success: true, url: urlData.publicUrl, isLocal: false };
   } catch (err) {
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true, warning: err.message });
+      reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true });
       reader.readAsDataURL(file);
     });
   }
 }
 
-// ================= DOM HELPERS & NAVIGATION =================
-function getCurrentFicha() {
-  return STATE.fichas.find(f => f.codigo === STATE.currentFichaCode) || STATE.fichas[0];
+// =========================================================================
+// 2. LOCAL STATE PERSISTENCE
+// =========================================================================
+function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem('academix_html_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      APP_STATE.fichas = parsed.fichas || APP_STATE.fichas;
+      APP_STATE.currentFichaCodigo = parsed.currentFichaCodigo || APP_STATE.currentFichaCodigo;
+      APP_STATE.aprendices = parsed.aprendices || [];
+      APP_STATE.competencias = parsed.competencias && parsed.competencias.length ? parsed.competencias : SEED_COMPETENCIAS;
+      APP_STATE.asistencias = parsed.asistencias || {};
+      APP_STATE.calificaciones = parsed.calificaciones || {};
+      APP_STATE.llamados = parsed.llamados || [];
+      APP_STATE.instructorProfile = parsed.instructorProfile || APP_STATE.instructorProfile;
+      APP_STATE.currentUserRole = parsed.currentUserRole || 'instructor';
+      APP_STATE.currentUserDoc = parsed.currentUserDoc || '8787499';
+    }
+  } catch (e) {
+    console.warn('Error loading localStorage:', e);
+  }
 }
 
-function switchView(viewName) {
-  document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active', 'bg-slate-100', 'text-emerald-700'));
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('academix_html_state', JSON.stringify({
+      fichas: APP_STATE.fichas,
+      currentFichaCodigo: APP_STATE.currentFichaCodigo,
+      aprendices: APP_STATE.aprendices,
+      competencias: APP_STATE.competencias,
+      asistencias: APP_STATE.asistencias,
+      calificaciones: APP_STATE.calificaciones,
+      llamados: APP_STATE.llamados,
+      instructorProfile: APP_STATE.instructorProfile,
+      currentUserRole: APP_STATE.currentUserRole,
+      currentUserDoc: APP_STATE.currentUserDoc
+    }));
+  } catch (e) {
+    console.warn('Error saving localStorage:', e);
+  }
+}
 
-  const targetView = document.getElementById(`view-${viewName}`);
-  const targetTab = document.querySelector(`.nav-tab[data-view="${viewName}"]`);
+// =========================================================================
+// 3. LOGIN & AUTHENTICATION CONTROLLER (PANTALLA PRINCIPAL)
+// =========================================================================
+let currentSelectedLoginRole = 'instructor';
 
-  if (targetView) targetView.classList.remove('hidden');
-  if (targetTab) targetTab.classList.add('active', 'bg-slate-100', 'text-emerald-700');
+function selectLoginRole(role) {
+  currentSelectedLoginRole = role;
+  document.querySelectorAll('.login-role-tab').forEach(b => {
+    b.classList.remove('bg-white', 'text-blue-900', 'shadow-sm');
+    b.classList.add('text-slate-600');
+  });
 
-  // Trigger Lucide icons reload
+  const tab = document.getElementById(`tab-role-${role}`);
+  if (tab) {
+    tab.classList.add('bg-white', 'text-blue-900', 'shadow-sm');
+    tab.classList.remove('text-slate-600');
+  }
+
+  const desc = document.getElementById('login-role-description');
+  const userInp = document.getElementById('input-login-user');
+  const passInp = document.getElementById('input-login-pass');
+  const labelUser = document.getElementById('login-label-user');
+
+  if (role === 'instructor') {
+    desc.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-[#002B7F] shrink-0 mt-0.5"></i><span>Acceso para instructores con gestión de fichas, asistencia, notas y actas.</span>';
+    labelUser.textContent = 'Usuario o Cédula del Instructor';
+    userInp.value = '8787499';
+    passInp.value = 'zamarovi';
+    userInp.placeholder = '8787499 o instructor';
+  } else if (role === 'aprendiz') {
+    desc.innerHTML = '<i data-lucide="badge" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i><span>Portal del aprendiz para consulta de notas, asistencias y foto de perfil.</span>';
+    labelUser.textContent = 'Documento de Identidad del Aprendiz';
+    userInp.value = APP_STATE.aprendices[0] ? APP_STATE.aprendices[0].documento : '1001234567';
+    passInp.value = userInp.value;
+    userInp.placeholder = 'Ej. 1001234567';
+  } else if (role === 'admin') {
+    desc.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i><span>Acceso de administración general de sedes y fichas académicas.</span>';
+    labelUser.textContent = 'Usuario Administrador';
+    userInp.value = 'Zarro';
+    passInp.value = 'zamarovi78*';
+    userInp.placeholder = 'Zarro';
+  }
+
   if (window.lucide) window.lucide.createIcons();
 }
 
-function openModal(modalId) {
-  const m = document.getElementById(modalId);
+function handleLoginSubmit(event) {
+  event.preventDefault();
+  const user = document.getElementById('input-login-user').value.trim();
+  const pass = document.getElementById('input-login-pass').value.trim();
+  const errBox = document.getElementById('login-error-alert');
+  const errText = document.getElementById('login-error-text');
+
+  errBox.classList.add('hidden');
+
+  // 1. Admin Login
+  if (currentSelectedLoginRole === 'admin' || user.toLowerCase() === 'zarro') {
+    if (pass === 'zamarovi78*') {
+      executeLoginSuccess('admin', 'Administrador General (Zarro)', 'admin');
+      return;
+    } else {
+      showLoginError('Contraseña incorrecta para el Administrador.');
+      return;
+    }
+  }
+
+  // 2. Instructor Login
+  if (currentSelectedLoginRole === 'instructor' || user === '8787499' || user.toLowerCase() === 'instructor') {
+    if (pass === 'zamarovi' || user === '8787499') {
+      const nombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+      executeLoginSuccess('instructor', nombre, '8787499');
+      return;
+    } else {
+      showLoginError('Contraseña incorrecta para el Instructor (Usuario: 8787499).');
+      return;
+    }
+  }
+
+  // 3. Aprendiz Login
+  if (currentSelectedLoginRole === 'aprendiz') {
+    const learner = APP_STATE.aprendices.find(a => a.documento === user || a.usuario === user);
+    if (learner) {
+      executeLoginSuccess('aprendiz', `${learner.nombres} ${learner.apellidos}`, learner.documento);
+      navigateToView('vista-aprendiz');
+      return;
+    } else {
+      // Allow login with document
+      executeLoginSuccess('aprendiz', `Aprendiz ${user}`, user);
+      navigateToView('vista-aprendiz');
+      return;
+    }
+  }
+
+  showLoginError('Credenciales no reconocidas en el sistema.');
+}
+
+function showLoginError(msg) {
+  const errBox = document.getElementById('login-error-alert');
+  const errText = document.getElementById('login-error-text');
+  errText.textContent = msg;
+  errBox.classList.remove('hidden');
+}
+
+function executeLoginSuccess(role, nombre, doc) {
+  APP_STATE.isLoggedIn = true;
+  APP_STATE.currentUserRole = role;
+  APP_STATE.currentUserNombre = nombre;
+  APP_STATE.currentUserDoc = doc;
+
+  localStorage.setItem('academix_logged_in', 'true');
+  saveToLocalStorage();
+
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+
+  renderAllViews();
+  if (role === 'aprendiz') {
+    navigateToView('vista-aprendiz');
+  } else {
+    navigateToView('panel');
+  }
+}
+
+function handleLogout() {
+  APP_STATE.isLoggedIn = false;
+  localStorage.removeItem('academix_logged_in');
+  document.getElementById('app-container').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  selectLoginRole('instructor');
+}
+
+function togglePasswordVisibility(inputId) {
+  const el = document.getElementById(inputId);
+  if (el) {
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+}
+
+// =========================================================================
+// 4. NAVIGATION & VIEW CONTROLLER
+// =========================================================================
+let currentActiveView = 'panel';
+
+function navigateToView(viewId) {
+  currentActiveView = viewId;
+
+  // Hide all view sections
+  document.querySelectorAll('.view-panel').forEach(v => v.classList.add('hidden'));
+
+  // Show target
+  const target = document.getElementById(`view-${viewId}`);
+  if (target) target.classList.remove('hidden');
+
+  // Update sidebar active buttons
+  document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
+    const navId = btn.getAttribute('data-nav-id');
+    const icon = btn.querySelector('i');
+    if (navId === viewId) {
+      btn.className = 'sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors text-left cursor-pointer bg-[#002B7F] text-white font-semibold shadow-xs';
+      if (icon) icon.className = 'w-4 h-4 text-white';
+    } else {
+      btn.className = 'sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors text-left cursor-pointer text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium';
+      if (icon) icon.className = 'w-4 h-4 text-slate-400';
+    }
+  });
+
+  // Toggle "Volver al panel" button
+  const backBtn = document.getElementById('btn-back-to-panel');
+  if (backBtn) {
+    if (viewId === 'panel') backBtn.classList.add('hidden');
+    else backBtn.classList.remove('hidden');
+  }
+
+  // Refresh target view data
+  if (viewId === 'asistencia') renderAttendanceTable();
+  if (viewId === 'calificaciones') renderCalificacionesTable();
+  if (viewId === 'consulta-asistencia') renderConsultaAsistenciaTable();
+  if (viewId === 'consulta-notas') renderConsultaNotasTable();
+  if (viewId === 'llamados') renderLlamadosCards();
+  if (viewId === 'vista-aprendiz') renderLearnerPortal();
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function getCurrentFicha() {
+  return APP_STATE.fichas.find(f => f.codigo === APP_STATE.currentFichaCodigo) || APP_STATE.fichas[0];
+}
+
+function toggleFichaDropdown() {
+  const d = document.getElementById('dropdown-fichas-menu');
+  d.classList.toggle('hidden');
+}
+
+function toggleNotificationDropdown() {
+  const d = document.getElementById('dropdown-notif-menu');
+  d.classList.toggle('hidden');
+}
+
+function toggleUserDropdown() {
+  const d = document.getElementById('dropdown-user-menu');
+  d.classList.toggle('hidden');
+}
+
+function selectFicha(codigo) {
+  APP_STATE.currentFichaCodigo = codigo;
+  saveToLocalStorage();
+  toggleFichaDropdown();
+  renderAllViews();
+  fetchRealDataFromSupabase();
+}
+
+function openModal(id) {
+  const m = document.getElementById(id);
   if (m) {
     m.classList.remove('hidden');
     m.classList.add('flex');
@@ -302,94 +568,113 @@ function openModal(modalId) {
   }
 }
 
-function closeModal(modalId) {
-  const m = document.getElementById(modalId);
+function closeModal(id) {
+  const m = document.getElementById(id);
   if (m) {
     m.classList.add('hidden');
     m.classList.remove('flex');
   }
 }
 
-// ================= RENDER FUNCTIONS =================
+// =========================================================================
+// 5. RENDERING LOGIC FOR ALL VIEWS
+// =========================================================================
 function renderAllViews() {
-  renderHeader();
+  renderTopNavigation();
+  renderSidebar();
   renderPanelGeneral();
   renderCargarInfo();
-  renderTomaAsistencia();
-  renderCalificaciones();
-  renderConsultaAsistencia();
-  renderConsultaNotas();
-  renderLlamados();
-  renderVistaAprendiz();
+  renderAttendanceTable();
+  renderCalificacionesTable();
+  renderConsultaAsistenciaTable();
+  renderConsultaNotasTable();
+  renderLlamadosCards();
+  renderLearnerPortal();
+
   if (window.lucide) window.lucide.createIcons();
 }
 
-function renderHeader() {
+function renderTopNavigation() {
   const ficha = getCurrentFicha();
   
-  // Ficha Selector
-  const selectFicha = document.getElementById('select-ficha');
-  if (selectFicha) {
-    selectFicha.innerHTML = STATE.fichas.map(f => `
-      <option value="${f.codigo}" ${f.codigo === STATE.currentFichaCode ? 'selected' : ''}>
-        Ficha ${f.codigo} - ${f.jornada}
-      </option>
+  // Ficha Label in Top Nav
+  const navFicha = document.getElementById('nav-active-ficha-label');
+  if (navFicha) {
+    navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : 'ADSO'}`;
+  }
+
+  // Dropdown list of fichas
+  const listFichas = document.getElementById('list-dropdown-fichas');
+  if (listFichas) {
+    listFichas.innerHTML = APP_STATE.fichas.map(f => `
+      <button onclick="selectFicha('${f.codigo}')" class="w-full text-left px-3 py-2 text-xs rounded-lg flex items-center justify-between transition ${f.codigo === ficha.codigo ? 'bg-blue-50 text-[#002B7F] font-bold' : 'hover:bg-slate-50 text-slate-700'}">
+        <span>${f.codigo} • ${f.jornada}</span>
+        ${f.codigo === ficha.codigo ? '<i data-lucide="check" class="w-4 h-4 text-[#002B7F]"></i>' : ''}
+      </button>
     `).join('');
   }
 
-  // Instructor Info in Header
-  const nameEl = document.getElementById('header-instructor-name');
-  if (nameEl) nameEl.textContent = `${STATE.instructorProfile.nombres} ${STATE.instructorProfile.apellidos}`;
+  // User Profile
+  document.getElementById('nav-user-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+  document.getElementById('menu-user-fullname').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+  document.getElementById('menu-user-email').textContent = APP_STATE.instructorProfile.email;
 
-  const avatarEl = document.getElementById('header-avatar');
-  if (avatarEl) {
-    if (STATE.instructorProfile.foto) {
-      avatarEl.innerHTML = `<img src="${STATE.instructorProfile.foto}" class="w-full h-full object-cover" alt="Instructor">`;
+  const avatar = document.getElementById('nav-user-avatar');
+  if (avatar) {
+    if (APP_STATE.instructorProfile.foto) {
+      avatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
     } else {
-      avatarEl.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
+      avatar.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
     }
   }
+}
 
-  // Role Button Label
-  const roleLabel = document.getElementById('btn-role-label');
-  if (roleLabel) {
-    roleLabel.textContent = STATE.currentRole === 'instructor' ? 'Modo Instructor' : 'Modo Aprendiz';
+function renderSidebar() {
+  document.getElementById('sidebar-metric-total-llamados').textContent = String(APP_STATE.llamados.length).padStart(2, '0');
+  document.getElementById('sidebar-metric-inasistencias').textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'inasistencia').length).padStart(2, '0');
+  document.getElementById('sidebar-metric-academicos').textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'academico').length).padStart(2, '0');
+  document.getElementById('sidebar-badge-llamados').textContent = APP_STATE.llamados.length;
+  document.getElementById('sidebar-footer-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+
+  const footAvatar = document.getElementById('sidebar-footer-avatar');
+  if (footAvatar && APP_STATE.instructorProfile.foto) {
+    footAvatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
   }
 }
 
 function renderPanelGeneral() {
   const ficha = getCurrentFicha();
   
-  document.getElementById('banner-ficha-code').textContent = ficha.codigo;
-  document.getElementById('banner-ficha-programa').textContent = ficha.programa;
-  document.getElementById('banner-ficha-jornada').textContent = `Jornada ${ficha.jornada}`;
-  document.getElementById('banner-ficha-centro').textContent = ficha.centroFormacion;
-  document.getElementById('banner-ficha-ambiente').textContent = ficha.ambiente;
-  document.getElementById('banner-ficha-instructor').textContent = ficha.instructorLider;
-
-  // Metrics
-  document.getElementById('metric-total-aprendices').textContent = STATE.aprendices.length;
-  document.getElementById('metric-total-competencias').textContent = STATE.competencias.length;
+  document.getElementById('panel-ficha-badge').textContent = `${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
+  document.getElementById('panel-aprendices-count').textContent = APP_STATE.aprendices.length;
   
-  const totalRaps = STATE.competencias.reduce((acc, c) => acc + (c.resultados ? c.resultados.length : 0), 0);
-  document.getElementById('metric-total-raps').textContent = totalRaps;
-  document.getElementById('metric-total-llamados').textContent = STATE.llamados.length;
+  document.getElementById('panel-banner-codigo').textContent = `Ficha ${ficha.codigo}`;
+  document.getElementById('panel-banner-jornada').textContent = ficha.jornada;
+  document.getElementById('panel-banner-programa').textContent = ficha.programa;
+  document.getElementById('panel-banner-centro').textContent = ficha.centroFormacion;
+  document.getElementById('panel-banner-ambiente').textContent = ficha.ambiente;
+  document.getElementById('panel-banner-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
 
-  // Competencias List
-  const compContainer = document.getElementById('dashboard-competencias-list');
-  if (compContainer) {
-    compContainer.innerHTML = STATE.competencias.map(c => `
-      <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+  // Stat numbers
+  document.getElementById('stat-total-aprendices').textContent = APP_STATE.aprendices.length;
+  document.getElementById('stat-total-competencias').textContent = APP_STATE.competencias.length;
+  document.getElementById('stat-total-llamados').textContent = APP_STATE.llamados.length;
+
+  // Competencias Grid
+  const compGrid = document.getElementById('panel-competencias-grid');
+  if (compGrid) {
+    compGrid.innerHTML = APP_STATE.competencias.map(c => `
+      <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="font-mono font-bold text-xs text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+          <span class="font-mono font-bold text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded">
             ${c.codigo}
           </span>
-          <span class="text-[11px] font-semibold text-slate-500">${c.horas} Horas</span>
+          <span class="text-xs font-semibold text-slate-500">${c.horas || 160} Horas</span>
         </div>
-        <h3 class="font-bold text-slate-900 text-xs">${c.nombre}</h3>
-        <div class="space-y-1 pt-1 border-t border-slate-200">
+        <h4 class="font-bold text-slate-900 text-xs leading-snug">${c.nombre}</h4>
+        <div class="space-y-1 pt-2 border-t border-slate-200 text-[11px] text-slate-600">
           ${(c.resultados || []).map(r => `
-            <div class="text-[11px] text-slate-600 flex items-start gap-1.5">
+            <div class="flex items-start gap-1.5">
               <span class="font-bold text-blue-700 shrink-0">• [${r.codigo}]:</span>
               <span>${r.descripcion}</span>
             </div>
@@ -401,40 +686,50 @@ function renderPanelGeneral() {
 }
 
 function renderCargarInfo() {
-  document.getElementById('count-preview-aprendices').textContent = STATE.aprendices.length;
+  document.getElementById('badge-cargar-count').textContent = `${APP_STATE.aprendices.length} Aprendices Registrados`;
   const tbody = document.getElementById('tbody-cargar-aprendices');
   if (!tbody) return;
 
-  tbody.innerHTML = STATE.aprendices.map((a, i) => `
+  if (APP_STATE.aprendices.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="p-8 text-center text-slate-400 font-semibold">
+          No hay aprendices registrados. Carga un archivo Excel o sincroniza con Supabase.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => `
     <tr class="hover:bg-slate-50 transition">
-      <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
-      <td class="p-3 font-mono font-bold text-slate-800">${a.documento}</td>
-      <td class="p-3 font-semibold text-slate-900">${a.nombres} ${a.apellidos}</td>
+      <td class="p-3 font-mono font-bold text-slate-400">${i + 1}</td>
+      <td class="p-3 font-mono font-bold text-slate-900">${a.documento}</td>
+      <td class="p-3 font-bold text-slate-900">${a.nombres} ${a.apellidos}</td>
       <td class="p-3 text-slate-600">${a.correo}</td>
       <td class="p-3 font-mono text-slate-500 bg-slate-50">${a.password || a.documento}</td>
       <td class="p-3">
         <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
-          ${a.estado}
+          ${a.estado || 'En Formación'}
         </span>
       </td>
     </tr>
   `).join('');
 }
 
-function renderTomaAsistencia() {
-  const fechaInput = document.getElementById('input-asistencia-fecha');
-  if (fechaInput && !fechaInput.value) {
-    fechaInput.value = new Date().toISOString().split('T')[0];
+function renderAttendanceTable() {
+  const dateInput = document.getElementById('input-asistencia-date');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
   }
+  const curDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+  const dayRecord = APP_STATE.asistencias[curDate] || {};
 
-  const currentDate = fechaInput ? fechaInput.value : new Date().toISOString().split('T')[0];
-  const dayAttendance = STATE.asistencias[currentDate] || {};
-
-  const tbody = document.getElementById('tbody-toma-asistencia');
+  const tbody = document.getElementById('tbody-asistencia-list');
   if (!tbody) return;
 
-  tbody.innerHTML = STATE.aprendices.map((a, i) => {
-    const estado = dayAttendance[a.documento] || 'presente';
+  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
+    const estado = dayRecord[a.documento] || 'presente';
     return `
       <tr class="hover:bg-slate-50 transition">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
@@ -443,49 +738,62 @@ function renderTomaAsistencia() {
           <div class="text-[10px] text-slate-500">${a.correo}</div>
         </td>
         <td class="p-3 font-mono font-bold text-slate-700">${a.documento}</td>
-        <td class="p-3">
-          <div class="flex items-center justify-center gap-1.5 flex-wrap">
-            <button onclick="setAsistenciaStatus('${a.documento}', 'presente')" class="px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${estado === 'presente' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">P</button>
-            <button onclick="setAsistenciaStatus('${a.documento}', 'injustificada')" class="px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${estado === 'injustificada' ? 'bg-red-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" title="Falta Injustificada">FI</button>
-            <button onclick="setAsistenciaStatus('${a.documento}', 'justificada')" class="px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${estado === 'justificada' ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" title="Falta Justificada">FJ</button>
-            <button onclick="setAsistenciaStatus('${a.documento}', 'retardo')" class="px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${estado === 'retardo' ? 'bg-orange-500 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" title="Retardo">R</button>
+        <td class="p-3 text-center">
+          <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100 gap-1">
+            <button onclick="setLearnerAttendance('${a.documento}', 'presente')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'presente' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">P</button>
+            <button onclick="setLearnerAttendance('${a.documento}', 'injustificada')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'injustificada' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Falta Injustificada">FI</button>
+            <button onclick="setLearnerAttendance('${a.documento}', 'justificada')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'justificada' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Falta Justificada">FJ</button>
+            <button onclick="setLearnerAttendance('${a.documento}', 'retardo')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'retardo' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Retardo">R</button>
           </div>
         </td>
         <td class="p-3">
-          <input type="text" placeholder="Observación..." class="w-full text-[11px] p-1.5 rounded border border-slate-200 bg-slate-50">
+          <input type="text" placeholder="Observación..." class="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50">
         </td>
       </tr>
     `;
   }).join('');
 }
 
-function setAsistenciaStatus(documento, status) {
-  const currentDate = document.getElementById('input-asistencia-fecha').value;
-  if (!STATE.asistencias[currentDate]) STATE.asistencias[currentDate] = {};
-  STATE.asistencias[currentDate][documento] = status;
-  saveLocalState();
-  renderTomaAsistencia();
+function setLearnerAttendance(doc, estado) {
+  const curDate = document.getElementById('input-asistencia-date').value;
+  if (!APP_STATE.asistencias[curDate]) APP_STATE.asistencias[curDate] = {};
+  APP_STATE.asistencias[curDate][doc] = estado;
+  saveToLocalStorage();
+  renderAttendanceTable();
 }
 
-function renderCalificaciones() {
-  const selectComp = document.getElementById('select-calificar-competencia');
-  if (selectComp && selectComp.children.length === 0) {
-    const allRaps = [];
-    STATE.competencias.forEach(c => {
-      (c.resultados || []).forEach(r => {
-        allRaps.push({ rapId: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion.substring(0, 45)}...` });
-      });
+function markAllAttendance(estado) {
+  const curDate = document.getElementById('input-asistencia-date').value;
+  if (!APP_STATE.asistencias[curDate]) APP_STATE.asistencias[curDate] = {};
+  APP_STATE.aprendices.forEach(a => {
+    APP_STATE.asistencias[curDate][a.documento] = estado;
+  });
+  saveToLocalStorage();
+  renderAttendanceTable();
+}
+
+function saveAttendanceRecord() {
+  saveToLocalStorage();
+  alert('¡Asistencia registrada y guardada exitosamente!');
+}
+
+function renderCalificacionesTable() {
+  const selectRap = document.getElementById('select-calificaciones-rap');
+  if (selectRap && selectRap.children.length === 0) {
+    const raps = [];
+    APP_STATE.competencias.forEach(c => {
+      (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion}` }));
     });
-    selectComp.innerHTML = allRaps.map(r => `<option value="${r.rapId}">${r.label}</option>`).join('');
+    selectRap.innerHTML = raps.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
   }
 
-  const selectedRap = selectComp ? selectComp.value || 'RAP1' : 'RAP1';
-  const tbody = document.getElementById('tbody-calificaciones');
+  const selectedRap = selectRap ? selectRap.value || 'RAP1' : 'RAP1';
+  const tbody = document.getElementById('tbody-calificaciones-list');
   if (!tbody) return;
 
-  tbody.innerHTML = STATE.aprendices.map((a, i) => {
+  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
     const key = `${a.documento}_${selectedRap}`;
-    const item = STATE.calificaciones[key] || { estado: 'aprobado', feedback: '' };
+    const cal = APP_STATE.calificaciones[key] || { estado: 'aprobado', feedback: '' };
     return `
       <tr class="hover:bg-slate-50 transition">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
@@ -493,44 +801,49 @@ function renderCalificaciones() {
         <td class="p-3 font-mono text-slate-700">${a.documento}</td>
         <td class="p-3 text-center">
           <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100 gap-1">
-            <button onclick="setJuicioEvaluativo('${a.documento}', '${selectedRap}', 'aprobado')" class="px-2.5 py-1 text-xs font-bold rounded cursor-pointer transition ${item.estado === 'aprobado' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">Aprobado (A)</button>
-            <button onclick="setJuicioEvaluativo('${a.documento}', '${selectedRap}', 'no_aprobado')" class="px-2.5 py-1 text-xs font-bold rounded cursor-pointer transition ${item.estado === 'no_aprobado' ? 'bg-red-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">No Aprobado (D)</button>
+            <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'aprobado')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'aprobado' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">Aprobado (A)</button>
+            <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'no_aprobado')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'no_aprobado' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">No Aprobado (D)</button>
           </div>
         </td>
         <td class="p-3">
-          <input type="text" value="${item.feedback || ''}" onchange="setJuicioFeedback('${a.documento}', '${selectedRap}', this.value)" placeholder="Observaciones de evidencia..." class="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50">
+          <input type="text" value="${cal.feedback || ''}" onchange="setCalificacionFeedback('${a.documento}', '${selectedRap}', this.value)" placeholder="Retroalimentación técnica..." class="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50">
         </td>
       </tr>
     `;
   }).join('');
 }
 
-function setJuicioEvaluativo(documento, rapId, estado) {
-  const key = `${documento}_${rapId}`;
-  if (!STATE.calificaciones[key]) STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
-  STATE.calificaciones[key].estado = estado;
-  saveLocalState();
-  renderCalificaciones();
+function setLearnerCalificacion(doc, rapId, estado) {
+  const key = `${doc}_${rapId}`;
+  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
+  APP_STATE.calificaciones[key].estado = estado;
+  saveToLocalStorage();
+  renderCalificacionesTable();
 }
 
-function setJuicioFeedback(documento, rapId, feedback) {
-  const key = `${documento}_${rapId}`;
-  if (!STATE.calificaciones[key]) STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
-  STATE.calificaciones[key].feedback = feedback;
-  saveLocalState();
+function setCalificacionFeedback(doc, rapId, feedback) {
+  const key = `${doc}_${rapId}`;
+  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
+  APP_STATE.calificaciones[key].feedback = feedback;
+  saveToLocalStorage();
 }
 
-function renderConsultaAsistencia() {
-  const tbody = document.getElementById('tbody-consulta-asistencia');
+function saveCalificacionesRecord() {
+  saveToLocalStorage();
+  alert('¡Juicios evaluativos guardados correctamente!');
+}
+
+function renderConsultaAsistenciaTable() {
+  const tbody = document.getElementById('tbody-consulta-asistencia-list');
   if (!tbody) return;
 
-  const dates = Object.keys(STATE.asistencias);
+  const dates = Object.keys(APP_STATE.asistencias);
   const totalDays = dates.length || 1;
 
-  tbody.innerHTML = STATE.aprendices.map(a => {
+  tbody.innerHTML = APP_STATE.aprendices.map(a => {
     let p = 0, fi = 0, fj = 0, r = 0;
     dates.forEach(d => {
-      const st = STATE.asistencias[d][a.documento];
+      const st = APP_STATE.asistencias[d][a.documento];
       if (st === 'presente') p++;
       else if (st === 'injustificada') fi++;
       else if (st === 'justificada') fj++;
@@ -541,174 +854,182 @@ function renderConsultaAsistencia() {
     const hasRisk = fi >= 3;
 
     return `
-      <tr class="hover:bg-slate-50 transition ${hasRisk ? 'bg-red-50/50' : ''}">
+      <tr class="hover:bg-slate-50 transition ${hasRisk ? 'bg-rose-50/50' : ''}">
         <td class="p-3">
           <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
-          <div class="text-[10px] text-slate-500">Doc: ${a.documento}</div>
+          <div class="text-[10px] text-slate-500 font-mono">Doc: ${a.documento}</div>
         </td>
         <td class="p-3 text-center font-bold text-emerald-700">${p}</td>
-        <td class="p-3 text-center font-bold ${fi > 0 ? 'text-red-700 bg-red-100 rounded' : 'text-slate-400'}">${fi}</td>
+        <td class="p-3 text-center font-bold ${fi > 0 ? 'text-rose-700 bg-rose-100 rounded' : 'text-slate-400'}">${fi}</td>
         <td class="p-3 text-center font-bold text-amber-700">${fj}</td>
         <td class="p-3 text-center font-bold text-orange-700">${r}</td>
-        <td class="p-3 text-center font-mono font-black ${percent < 80 ? 'text-red-600' : 'text-emerald-600'}">${percent}%</td>
+        <td class="p-3 text-center font-mono font-black ${percent < 80 ? 'text-rose-600' : 'text-emerald-600'}">${percent}%</td>
         <td class="p-3 text-center">
           ${hasRisk ? `
-            <button onclick="prefillLlamado('${a.documento}', 'inasistencia', 'Acumulación de ${fi} faltas injustificadas a formación.')" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-[11px] font-bold shadow-xs cursor-pointer">
+            <button onclick="prefillAndOpenLlamado('${a.documento}', 'inasistencia', 'Acumulación de ${fi} inasistencias injustificadas.')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer">
               Generar Acta
             </button>
-          ` : '<span class="text-slate-400 text-[11px]">Normal</span>'}
+          ` : '<span class="text-slate-400 text-xs">Normal</span>'}
         </td>
       </tr>
     `;
   }).join('');
 }
 
-function renderConsultaNotas() {
-  const table = document.getElementById('table-sabana-notas');
+function renderConsultaNotasTable() {
+  const table = document.getElementById('table-sabana-notas-full');
   if (!table) return;
 
-  const allRaps = [];
-  STATE.competencias.forEach(c => {
-    (c.resultados || []).forEach(r => allRaps.push({ id: r.id, codigo: r.codigo }));
+  const raps = [];
+  APP_STATE.competencias.forEach(c => {
+    (c.resultados || []).forEach(r => raps.push({ id: r.id, codigo: r.codigo }));
   });
 
-  let headerHtml = `
+  const thead = `
     <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
       <tr>
         <th class="p-3">Aprendiz</th>
         <th class="p-3">Documento</th>
-        ${allRaps.map(r => `<th class="p-3 text-center">${r.codigo}</th>`).join('')}
+        ${raps.map(r => `<th class="p-3 text-center">${r.codigo}</th>`).join('')}
         <th class="p-3 text-center">% Avance</th>
       </tr>
     </thead>
   `;
 
-  let rowsHtml = STATE.aprendices.map(a => {
+  const tbody = APP_STATE.aprendices.map(a => {
     let aprobados = 0;
-    const rapCols = allRaps.map(r => {
+    const rapTds = raps.map(r => {
       const key = `${a.documento}_${r.id}`;
-      const cal = STATE.calificaciones[key];
-      const isApproved = cal ? cal.estado === 'aprobado' : true; // default approved in mock
+      const isApproved = APP_STATE.calificaciones[key] ? APP_STATE.calificaciones[key].estado === 'aprobado' : true;
       if (isApproved) aprobados++;
       return `
         <td class="p-3 text-center font-bold">
-          <span class="px-2 py-0.5 rounded text-[10px] ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+          <span class="px-2 py-0.5 rounded text-[10px] ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
             ${isApproved ? 'A' : 'D'}
           </span>
         </td>
       `;
     }).join('');
 
-    const percent = Math.round((aprobados / (allRaps.length || 1)) * 100);
+    const perc = Math.round((aprobados / (raps.length || 1)) * 100);
 
     return `
-      <tr class="hover:bg-slate-50 transition border-b border-slate-100 bg-white">
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="p-3 font-bold text-slate-900">${a.nombres} ${a.apellidos}</td>
         <td class="p-3 font-mono text-slate-600">${a.documento}</td>
-        ${rapCols}
-        <td class="p-3 text-center font-mono font-black text-emerald-700">${percent}%</td>
+        ${rapTds}
+        <td class="p-3 text-center font-mono font-black text-emerald-700">${perc}%</td>
       </tr>
     `;
   }).join('');
 
-  table.innerHTML = headerHtml + `<tbody>${rowsHtml}</tbody>`;
+  table.innerHTML = thead + `<tbody class="divide-y divide-slate-100">${tbody}</tbody>`;
 }
 
-function renderLlamados() {
-  const container = document.getElementById('container-llamados-list');
+function renderLlamadosCards() {
+  const container = document.getElementById('container-llamados-cards');
   if (!container) return;
 
-  if (STATE.llamados.length === 0) {
+  if (APP_STATE.llamados.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-        <i data-lucide="shield-check" class="w-8 h-8 mx-auto mb-2 text-emerald-500"></i>
-        <p class="font-bold text-xs">No hay llamados de atención ni actas disciplinarias registradas.</p>
-        <span class="text-[11px]">Todos los aprendices cumplen con la asistencia y compromisos.</span>
+      <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-400">
+        <i data-lucide="shield-check" class="w-10 h-10 mx-auto mb-2 text-emerald-500"></i>
+        <p class="font-bold text-sm text-slate-700">No hay llamados de atención registrados</p>
+        <span class="text-xs text-slate-500">Todos los aprendices cumplen con la asistencia y compromisos.</span>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = STATE.llamados.map(l => `
-    <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div>
+  container.innerHTML = APP_STATE.llamados.map(l => `
+    <div class="p-5 bg-white border border-slate-200 rounded-2xl shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="space-y-1">
         <div class="flex items-center gap-2">
-          <span class="font-mono font-bold text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200">${l.numeroActa}</span>
-          <span class="text-xs font-bold text-slate-900">${l.aprendizNombre}</span>
-          <span class="text-[11px] text-slate-500 font-mono">(${l.aprendizDocumento})</span>
+          <span class="font-mono font-bold text-xs bg-rose-100 text-rose-900 px-2.5 py-0.5 rounded-md border border-rose-200">
+            ${l.numeroActa}
+          </span>
+          <span class="font-bold text-slate-900 text-sm">${l.aprendizNombre}</span>
+          <span class="text-xs font-mono text-slate-500">(${l.aprendizDocumento})</span>
         </div>
-        <p class="text-xs text-slate-600 mt-1"><strong>Motivo:</strong> ${l.motivo}</p>
-        <span class="text-[10px] text-slate-400 mt-0.5 block">Fecha: ${l.fecha} • Tipo: ${l.tipo}</span>
+        <p class="text-xs text-slate-600 leading-relaxed"><strong>Motivo:</strong> ${l.motivo}</p>
+        <span class="text-[11px] text-slate-400 block">Fecha: ${l.fecha} • Tipo: ${l.tipo}</span>
       </div>
-      <button onclick="openActaPdf('${l.id}')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0">
-        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-        <span>Ver / Imprimir Acta</span>
+
+      <button onclick="openPrintableActaModal('${l.id}')" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs cursor-pointer shrink-0">
+        <i data-lucide="printer" class="w-4 h-4"></i>
+        <span>Ver / Imprimir Acta Oficial</span>
       </button>
     </div>
   `).join('');
 }
 
-function renderVistaAprendiz() {
-  const learner = STATE.aprendices.find(a => a.documento === STATE.currentLearnerDoc) || STATE.aprendices[0];
+function renderLearnerPortal() {
+  const learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc) || APP_STATE.aprendices[0];
   if (!learner) return;
 
+  // Learner Select Dropdown
+  const selLearner = document.getElementById('select-active-learner-view');
+  if (selLearner) {
+    selLearner.innerHTML = APP_STATE.aprendices.map(a => `
+      <option value="${a.documento}" ${a.documento === learner.documento ? 'selected' : ''}>
+        ${a.nombres} ${a.apellidos} (${a.documento})
+      </option>
+    `).join('');
+  }
+
   const ficha = getCurrentFicha();
+  document.getElementById('portal-aprendiz-name').textContent = `${learner.nombres} ${learner.apellidos}`;
+  document.getElementById('portal-aprendiz-doc').textContent = learner.documento;
+  document.getElementById('portal-aprendiz-email').textContent = learner.correo;
+  document.getElementById('portal-aprendiz-ficha-badge').textContent = `Ficha ${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
 
-  document.getElementById('card-aprendiz-nombre').textContent = `${learner.nombres} ${learner.apellidos}`;
-  document.getElementById('card-aprendiz-doc').textContent = learner.documento;
-  document.getElementById('card-aprendiz-email').textContent = learner.correo;
-  document.getElementById('card-aprendiz-programa').textContent = ficha.programa;
-  document.getElementById('card-aprendiz-ficha').textContent = ficha.codigo;
-
-  const avatarContainer = document.getElementById('aprendiz-avatar-img');
-  if (avatarContainer) {
+  // Avatar Photo
+  const avatar = document.getElementById('portal-aprendiz-avatar');
+  if (avatar) {
     if (learner.foto) {
-      avatarContainer.innerHTML = `<img src="${learner.foto}" class="w-full h-full object-cover" alt="${learner.nombres}">`;
+      avatar.innerHTML = `<img src="${learner.foto}" class="w-full h-full object-cover">`;
     } else {
-      avatarContainer.innerHTML = `<i data-lucide="user" class="w-10 h-10 text-slate-400"></i>`;
+      avatar.innerHTML = `<i data-lucide="user" class="w-10 h-10"></i>`;
     }
   }
 
-  // Learner attendance history summary
-  const dates = Object.keys(STATE.asistencias);
-  let p = 0, fi = 0, fj = 0, r = 0;
+  // Attendance Metrics
+  const dates = Object.keys(APP_STATE.asistencias);
+  let p = 0, fi = 0, fj = 0;
   dates.forEach(d => {
-    const st = STATE.asistencias[d][learner.documento];
+    const st = APP_STATE.asistencias[d][learner.documento];
     if (st === 'presente') p++;
     else if (st === 'injustificada') fi++;
     else if (st === 'justificada') fj++;
-    else if (st === 'retardo') r++;
   });
 
-  const asisSummary = document.getElementById('aprendiz-asistencia-summary');
-  if (asisSummary) {
-    asisSummary.innerHTML = `
-      <div class="grid grid-cols-3 gap-2 text-center">
-        <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg"><strong class="text-emerald-800 text-base block font-black">${p}</strong><span class="text-[10px] text-slate-500">Asistencias</span></div>
-        <div class="p-2.5 bg-red-50 border border-red-200 rounded-lg"><strong class="text-red-800 text-base block font-black">${fi}</strong><span class="text-[10px] text-slate-500">Injustificadas</span></div>
-        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg"><strong class="text-amber-800 text-base block font-black">${fj}</strong><span class="text-[10px] text-slate-500">Justificadas</span></div>
-      </div>
+  const asisContainer = document.getElementById('portal-asistencia-metrics');
+  if (asisContainer) {
+    asisContainer.innerHTML = `
+      <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl"><strong class="text-emerald-800 text-lg font-black block">${p}</strong><span class="text-[11px] text-slate-500 font-semibold">Asistencias</span></div>
+      <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl"><strong class="text-rose-800 text-lg font-black block">${fi}</strong><span class="text-[11px] text-slate-500 font-semibold">Injustificadas</span></div>
+      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl"><strong class="text-amber-800 text-lg font-black block">${fj}</strong><span class="text-[11px] text-slate-500 font-semibold">Justificadas</span></div>
     `;
   }
 
-  // Learner RAPs summary
-  const rapsSummary = document.getElementById('aprendiz-calificaciones-summary');
-  if (rapsSummary) {
-    const allRaps = [];
-    STATE.competencias.forEach(c => {
-      (c.resultados || []).forEach(r => allRaps.push({ ...r, compCodigo: c.codigo }));
+  // RAPs List
+  const rapsList = document.getElementById('portal-raps-list');
+  if (rapsList) {
+    const raps = [];
+    APP_STATE.competencias.forEach(c => {
+      (c.resultados || []).forEach(r => raps.push({ ...r, compCodigo: c.codigo }));
     });
 
-    rapsSummary.innerHTML = allRaps.map(r => {
+    rapsList.innerHTML = raps.map(r => {
       const key = `${learner.documento}_${r.id}`;
-      const isApproved = STATE.calificaciones[key] ? STATE.calificaciones[key].estado === 'aprobado' : true;
+      const isApproved = APP_STATE.calificaciones[key] ? APP_STATE.calificaciones[key].estado === 'aprobado' : true;
       return `
-        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
           <div>
-            <span class="font-bold text-slate-800 block">[${r.codigo}] ${r.descripcion.substring(0, 38)}...</span>
+            <strong class="text-xs text-slate-800 block">[${r.codigo}] ${r.descripcion.substring(0, 42)}...</strong>
             <span class="text-[10px] text-slate-500">Norma: ${r.compCodigo}</span>
           </div>
-          <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+          <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
             ${isApproved ? 'Aprobado' : 'No Aprobado'}
           </span>
         </div>
@@ -717,367 +1038,317 @@ function renderVistaAprendiz() {
   }
 }
 
-// ================= EVENT LISTENERS & SETUP =================
-document.addEventListener('DOMContentLoaded', () => {
-  loadLocalState();
-  renderAllViews();
-  syncDataWithSupabase();
-
-  // Navigation tab clicks
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const view = tab.getAttribute('data-view');
-      switchView(view);
-    });
-  });
-
-  // Ficha change dropdown
-  const selectFicha = document.getElementById('select-ficha');
-  if (selectFicha) {
-    selectFicha.addEventListener('change', (e) => {
-      STATE.currentFichaCode = e.target.value;
-      saveLocalState();
-      renderAllViews();
-      syncDataWithSupabase();
-    });
-  }
-
-  // Header Modal Buttons
-  document.getElementById('btn-open-supabase').addEventListener('click', () => openModal('modal-supabase'));
-  document.getElementById('btn-open-perfil').addEventListener('click', () => {
-    document.getElementById('prof-nombres').value = STATE.instructorProfile.nombres;
-    document.getElementById('prof-apellidos').value = STATE.instructorProfile.apellidos;
-    document.getElementById('prof-documento').value = STATE.instructorProfile.documento;
-    document.getElementById('prof-email').value = STATE.instructorProfile.email;
-    document.getElementById('prof-cargo').value = STATE.instructorProfile.cargo;
-    document.getElementById('prof-centro').value = STATE.instructorProfile.centroFormacion;
-    openModal('modal-perfil-instructor');
-  });
-  document.getElementById('btn-open-login').addEventListener('click', () => openModal('modal-login'));
-
-  // Supabase Modal Tabs
-  document.querySelectorAll('.supabase-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.supabase-tab-btn').forEach(b => b.classList.remove('active', 'bg-emerald-600', 'text-white'));
-      document.querySelectorAll('.supabase-subtab').forEach(t => t.classList.add('hidden'));
-
-      btn.classList.add('active', 'bg-emerald-600', 'text-white');
-      const target = document.getElementById(`supabase-tab-${btn.getAttribute('data-subtab')}`);
-      if (target) target.classList.remove('hidden');
-    });
-  });
-
-  // Supabase Sync Buttons
-  document.getElementById('btn-sync-supabase-push').addEventListener('click', async () => {
-    const msgEl = document.getElementById('supabase-sync-status-msg');
-    msgEl.classList.remove('hidden');
-    msgEl.textContent = 'Enviando ficha y aprendices a Supabase...';
-    const res = await pushDataToSupabase();
-    msgEl.textContent = res.message;
-  });
-
-  document.getElementById('btn-sync-supabase-pull').addEventListener('click', async () => {
-    const msgEl = document.getElementById('supabase-sync-status-msg');
-    msgEl.classList.remove('hidden');
-    msgEl.textContent = 'Descargando registros desde Supabase...';
-    const res = await syncDataWithSupabase();
-    msgEl.textContent = res.message;
-  });
-
-  document.getElementById('btn-sync-to-supabase-direct').addEventListener('click', async () => {
-    alert('Sincronizando con base de datos Supabase...');
-    const res = await pushDataToSupabase();
-    alert(res.message);
-  });
-
-  // Copy SQL Script Button
-  document.getElementById('btn-copy-sql').addEventListener('click', () => {
-    const text = document.getElementById('sql-script-content').innerText;
-    navigator.clipboard.writeText(text);
-    alert('¡Script SQL copiado al portapapeles!');
-  });
-
-  // Attendance Controls
-  document.getElementById('btn-marcar-todos-presentes').addEventListener('click', () => {
-    const curDate = document.getElementById('input-asistencia-fecha').value;
-    if (!STATE.asistencias[curDate]) STATE.asistencias[curDate] = {};
-    STATE.aprendices.forEach(a => {
-      STATE.asistencias[curDate][a.documento] = 'presente';
-    });
-    saveLocalState();
-    renderTomaAsistencia();
-  });
-
-  document.getElementById('btn-guardar-asistencia').addEventListener('click', () => {
-    saveLocalState();
-    alert('¡Asistencia guardada correctamente en el sistema!');
-  });
-
-  document.getElementById('input-asistencia-fecha').addEventListener('change', () => {
-    renderTomaAsistencia();
-  });
-
-  // Qualifications Save
-  document.getElementById('btn-guardar-calificaciones').addEventListener('click', () => {
-    saveLocalState();
-    alert('¡Juicios evaluativos guardados correctamente!');
-  });
-
-  document.getElementById('select-calificar-competencia').addEventListener('change', () => {
-    renderCalificaciones();
-  });
-
-  // Photo Upload for Apprentice to Supabase Storage
-  document.getElementById('input-foto-aprendiz').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const statusEl = document.getElementById('aprendiz-photo-status');
-    statusEl.classList.remove('hidden');
-    statusEl.textContent = 'Subiendo fotografía a Supabase Storage...';
-
-    const res = await uploadPhotoToSupabaseStorage(file, `aprendices/${STATE.currentLearnerDoc}`);
-    if (res.success) {
-      const idx = STATE.aprendices.findIndex(a => a.documento === STATE.currentLearnerDoc);
-      if (idx !== -1) {
-        STATE.aprendices[idx].foto = res.url;
-        saveLocalState();
-        renderVistaAprendiz();
-        statusEl.textContent = '¡Foto de perfil actualizada en Supabase Storage!';
-        setTimeout(() => statusEl.classList.add('hidden'), 4000);
-      }
-    }
-  });
-
-  // Photo Upload for Instructor to Supabase Storage
-  document.getElementById('input-foto-instructor').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const res = await uploadPhotoToSupabaseStorage(file, 'instructores');
-    if (res.success) {
-      STATE.instructorProfile.foto = res.url;
-      const preview = document.getElementById('instructor-profile-preview');
-      if (preview) preview.innerHTML = `<img src="${res.url}" class="w-full h-full object-cover">`;
-      saveLocalState();
-      renderHeader();
-      alert('¡Foto de instructor cargada en Supabase Storage!');
-    }
-  });
-
-  // Instructor Profile Save
-  document.getElementById('btn-guardar-perfil-instructor').addEventListener('click', async () => {
-    STATE.instructorProfile.nombres = document.getElementById('prof-nombres').value;
-    STATE.instructorProfile.apellidos = document.getElementById('prof-apellidos').value;
-    STATE.instructorProfile.documento = document.getElementById('prof-documento').value;
-    STATE.instructorProfile.email = document.getElementById('prof-email').value;
-    STATE.instructorProfile.cargo = document.getElementById('prof-cargo').value;
-    STATE.instructorProfile.centroFormacion = document.getElementById('prof-centro').value;
-
-    saveLocalState();
-    renderHeader();
-    closeModal('modal-perfil-instructor');
-    alert('¡Perfil del instructor guardado y sincronizado!');
-  });
-
-  // Disciplinary Acts / Llamados
-  document.getElementById('btn-abrir-nuevo-llamado').addEventListener('click', () => {
-    const selectLearner = document.getElementById('nuevo-llamado-aprendiz');
-    selectLearner.innerHTML = STATE.aprendices.map(a => `<option value="${a.documento}">${a.nombres} ${a.apellidos} (${a.documento})</option>`).join('');
-    document.getElementById('nuevo-llamado-fecha').value = new Date().toISOString().split('T')[0];
-    openModal('modal-nuevo-llamado');
-  });
-
-  document.getElementById('btn-guardar-nuevo-llamado').addEventListener('click', () => {
-    const doc = document.getElementById('nuevo-llamado-aprendiz').value;
-    const learner = STATE.aprendices.find(a => a.documento === doc);
-    const tipo = document.getElementById('nuevo-llamado-tipo').value;
-    const fecha = document.getElementById('nuevo-llamado-fecha').value;
-    const motivo = document.getElementById('nuevo-llamado-motivo').value || 'Inasistencia no justificada a sesiones formativas';
-    const compromiso = document.getElementById('nuevo-llamado-compromiso').value || 'El aprendiz se compromete a presentar las evidencias pendientes y regularizar su asistencia.';
-
-    const nuevo = {
-      id: `llamado_${Date.now()}`,
-      numeroActa: `ACTA-${new Date().getFullYear()}-00${STATE.llamados.length + 1}`,
-      aprendizDocumento: doc,
-      aprendizNombre: learner ? `${learner.nombres} ${learner.apellidos}` : 'Aprendiz SENA',
-      tipo,
-      fecha,
-      motivo,
-      compromiso
-    };
-
-    STATE.llamados.unshift(nuevo);
-    saveLocalState();
-    renderLlamados();
-    closeModal('modal-nuevo-llamado');
-    openActaPdf(nuevo.id);
-  });
-
-  // Login Form Submission
-  document.getElementById('btn-submit-login').addEventListener('click', () => {
-    const role = document.getElementById('login-role').value;
-    const doc = document.getElementById('login-documento').value.trim();
-    const pass = document.getElementById('login-password').value.trim();
-    const errEl = document.getElementById('login-error-msg');
-
-    if (role === 'instructor') {
-      STATE.currentRole = 'instructor';
-      saveLocalState();
-      closeModal('modal-login');
-      renderHeader();
-      switchView('panel-general');
-    } else {
-      const learner = STATE.aprendices.find(a => a.documento === doc);
-      if (learner) {
-        STATE.currentRole = 'aprendiz';
-        STATE.currentLearnerDoc = learner.documento;
-        saveLocalState();
-        closeModal('modal-login');
-        renderHeader();
-        switchView('aprendiz');
-      } else {
-        errEl.textContent = 'Documento no encontrado en la nómina de la ficha.';
-        errEl.classList.remove('hidden');
-      }
-    }
-  });
-
-  // Export Asistencia to Excel (SheetJS)
-  document.getElementById('btn-export-asistencia-excel').addEventListener('click', () => {
-    if (typeof XLSX === 'undefined') {
-      alert('Librería XLSX no cargada.');
-      return;
-    }
-
-    const data = STATE.aprendices.map(a => {
-      const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
-      Object.keys(STATE.asistencias).forEach(d => {
-        row[d] = STATE.asistencias[d][a.documento] || 'P';
-      });
-      return row;
-    });
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
-    XLSX.writeFile(wb, `Asistencia_Ficha_${STATE.currentFichaCode}.xlsx`);
-  });
-
-  // Export Notas to Excel (SheetJS)
-  document.getElementById('btn-export-notas-excel').addEventListener('click', () => {
-    if (typeof XLSX === 'undefined') return;
-
-    const data = STATE.aprendices.map(a => {
-      const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
-      STATE.competencias.forEach(c => {
-        (c.resultados || []).forEach(r => {
-          const cal = STATE.calificaciones[`${a.documento}_${r.id}`];
-          row[`${c.codigo}_${r.codigo}`] = cal ? (cal.estado === 'aprobado' ? 'A' : 'D') : 'A';
-        });
-      });
-      return row;
-    });
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Calificaciones');
-    XLSX.writeFile(wb, `Notas_Ficha_${STATE.currentFichaCode}.xlsx`);
-  });
-
-  // Download Excel Template
-  document.getElementById('btn-download-template').addEventListener('click', () => {
-    if (typeof XLSX === 'undefined') return;
-    const template = [
-      { 'TipoDocumento': 'CC', 'Documento': '1001234567', 'Nombres': 'Carlos', 'Apellidos': 'Pérez', 'Correo': 'carlos.perez@misena.edu.co', 'Estado': 'En Formación' },
-      { 'TipoDocumento': 'TI', 'Documento': '1002345678', 'Nombres': 'Ana', 'Apellidos': 'Gómez', 'Correo': 'ana.gomez@misena.edu.co', 'Estado': 'En Formación' }
-    ];
-    const ws = XLSX.utils.json_to_sheet(template);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla_Aprendices');
-    XLSX.writeFile(wb, 'Plantilla_Aprendices_SENA.xlsx');
-  });
-
-  // Excel File Upload Parser
-  const excelInput = document.getElementById('input-excel-file');
-  if (excelInput) {
-    excelInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file || typeof XLSX === 'undefined') return;
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(firstSheet);
-
-          if (json.length > 0) {
-            const parsedAprendices = json.map((r, idx) => {
-              const doc = r['Documento'] || r['Numero Documento'] || r['DOCUMENTO'] || `${1000000000 + idx}`;
-              const nombres = r['Nombres'] || r['Nombre'] || r['NOMBRES'] || 'Aprendiz';
-              const apellidos = r['Apellidos'] || r['Apellido'] || r['APELLIDOS'] || '';
-              const correo = r['Correo'] || r['Email'] || r['CORREO'] || `${doc}@misena.edu.co`;
-
-              return {
-                id: `ap_${Date.now()}_${idx}`,
-                documento: String(doc).trim(),
-                nombres: String(nombres).trim(),
-                apellidos: String(apellidos).trim(),
-                correo: String(correo).trim(),
-                password: String(doc).trim(),
-                estado: 'activo',
-                foto: ''
-              };
-            });
-
-            STATE.aprendices = parsedAprendices;
-            saveLocalState();
-            renderAllViews();
-            alert(`¡Se cargaron exitosamente ${parsedAprendices.length} aprendices desde el archivo Excel!`);
-          }
-        } catch (err) {
-          alert(`Error al procesar el archivo Excel: ${err.message}`);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  }
-});
-
-// Helper for opening Printable Acta
-function openActaPdf(llamadoId) {
-  const l = STATE.llamados.find(item => item.id === llamadoId);
-  if (!l) return;
-
-  const ficha = getCurrentFicha();
-
-  document.getElementById('acta-pdf-numero').textContent = l.numeroActa;
-  document.getElementById('acta-pdf-fecha').textContent = l.fecha;
-  document.getElementById('acta-pdf-tipo').textContent = l.tipo;
-  document.getElementById('acta-pdf-ficha').textContent = `${ficha.codigo} - ${ficha.programa}`;
-  document.getElementById('acta-pdf-aprendiz').textContent = `${l.aprendizNombre} (${l.aprendizDocumento})`;
-  document.getElementById('acta-pdf-motivo').textContent = l.motivo;
-  document.getElementById('acta-pdf-compromiso').textContent = l.compromiso;
-  document.getElementById('acta-pdf-firma-instructor').textContent = STATE.instructorProfile.nombres + ' ' + STATE.instructorProfile.apellidos;
-
-  openModal('modal-acta-pdf');
+function changeLearnerPortalView(doc) {
+  APP_STATE.currentUserDoc = doc;
+  renderLearnerPortal();
 }
 
-function prefillLlamado(documento, tipo, motivo) {
-  const learner = STATE.aprendices.find(a => a.documento === documento);
-  const selectLearner = document.getElementById('nuevo-llamado-aprendiz');
-  selectLearner.innerHTML = STATE.aprendices.map(a => `
-    <option value="${a.documento}" ${a.documento === documento ? 'selected' : ''}>
+// =========================================================================
+// 6. PHOTO STORAGE UPLOADS (SUPABASE BUCKET 'perfiles')
+// =========================================================================
+async function handleLearnerPhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const statusBadge = document.getElementById('portal-upload-status');
+  statusBadge.classList.remove('hidden');
+  statusBadge.textContent = 'Subiendo fotografía a Supabase Storage...';
+
+  const res = await uploadToSupabaseStorage(file, `aprendices/${APP_STATE.currentUserDoc}`);
+  if (res.success) {
+    const idx = APP_STATE.aprendices.findIndex(a => a.documento === APP_STATE.currentUserDoc);
+    if (idx !== -1) {
+      APP_STATE.aprendices[idx].foto = res.url;
+      
+      // Update in Supabase Database as well
+      if (supabaseClient) {
+        await supabaseClient.from('aprendices').update({ foto: res.url }).eq('documento', APP_STATE.currentUserDoc);
+      }
+      
+      saveToLocalStorage();
+      renderLearnerPortal();
+      statusBadge.textContent = '¡Foto guardada en Supabase Storage!';
+      setTimeout(() => statusBadge.classList.add('hidden'), 4000);
+    }
+  }
+}
+
+async function handleInstructorPhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const res = await uploadToSupabaseStorage(file, 'instructores');
+  if (res.success) {
+    APP_STATE.instructorProfile.foto = res.url;
+    
+    if (supabaseClient) {
+      await supabaseClient.from('instructores').update({ foto: res.url }).eq('documento', APP_STATE.instructorProfile.documento);
+    }
+
+    const preview = document.getElementById('preview-modal-instructor-avatar');
+    if (preview) preview.innerHTML = `<img src="${res.url}" class="w-full h-full object-cover">`;
+
+    saveToLocalStorage();
+    renderTopNavigation();
+    renderSidebar();
+    alert('¡Foto del instructor guardada en Supabase Storage!');
+  }
+}
+
+function openInstructorProfileModal() {
+  document.getElementById('input-prof-nombres').value = APP_STATE.instructorProfile.nombres;
+  document.getElementById('input-prof-apellidos').value = APP_STATE.instructorProfile.apellidos;
+  document.getElementById('input-prof-documento').value = APP_STATE.instructorProfile.documento;
+  document.getElementById('input-prof-email').value = APP_STATE.instructorProfile.email;
+  document.getElementById('input-prof-cargo').value = APP_STATE.instructorProfile.cargo;
+  document.getElementById('input-prof-centro').value = APP_STATE.instructorProfile.centroFormacion;
+
+  const prev = document.getElementById('preview-modal-instructor-avatar');
+  if (prev && APP_STATE.instructorProfile.foto) {
+    prev.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
+  }
+  openModal('modal-perfil-instructor');
+}
+
+async function saveInstructorProfileData() {
+  APP_STATE.instructorProfile.nombres = document.getElementById('input-prof-nombres').value.trim();
+  APP_STATE.instructorProfile.apellidos = document.getElementById('input-prof-apellidos').value.trim();
+  APP_STATE.instructorProfile.documento = document.getElementById('input-prof-documento').value.trim();
+  APP_STATE.instructorProfile.email = document.getElementById('input-prof-email').value.trim();
+  APP_STATE.instructorProfile.cargo = document.getElementById('input-prof-cargo').value.trim();
+  APP_STATE.instructorProfile.centroFormacion = document.getElementById('input-prof-centro').value.trim();
+
+  saveToLocalStorage();
+  renderTopNavigation();
+  renderSidebar();
+  renderPanelGeneral();
+  closeModal('modal-perfil-instructor');
+
+  if (supabaseClient) {
+    await supabaseClient.from('instructores').upsert({
+      documento: APP_STATE.instructorProfile.documento,
+      nombres: APP_STATE.instructorProfile.nombres,
+      apellidos: APP_STATE.instructorProfile.apellidos,
+      email: APP_STATE.instructorProfile.email,
+      cargo: APP_STATE.instructorProfile.cargo,
+      centro_formacion: APP_STATE.instructorProfile.centroFormacion,
+      foto: APP_STATE.instructorProfile.foto || null
+    }, { onConflict: 'documento' });
+  }
+
+  alert('¡Perfil del instructor actualizado y sincronizado en Supabase!');
+}
+
+// =========================================================================
+// 7. EXCEL IMPORT / EXPORT (SHEETJS)
+// =========================================================================
+function handleExcelFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file || typeof XLSX === 'undefined') return;
+
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(firstSheet);
+
+      if (json.length > 0) {
+        const parsedAprendices = json.map((r, idx) => {
+          const doc = String(r['Documento'] || r['Numero Documento'] || r['DOCUMENTO'] || `${1000000000 + idx}`).trim();
+          const nombres = String(r['Nombres'] || r['Nombre'] || r['NOMBRES'] || 'Aprendiz').trim();
+          const apellidos = String(r['Apellidos'] || r['Apellido'] || r['APELLIDOS'] || '').trim();
+          const correo = String(r['Correo'] || r['Email'] || r['CORREO'] || `${doc}@misena.edu.co`).trim();
+
+          return {
+            id: `ap_${Date.now()}_${idx}`,
+            documento: doc,
+            nombres: nombres,
+            apellidos: apellidos,
+            correo: correo,
+            usuario: doc,
+            password: doc,
+            estado: 'En Formación',
+            foto: '',
+            rachaAsistencia: 100,
+            fallasConsecutivas: 0
+          };
+        });
+
+        APP_STATE.aprendices = parsedAprendices;
+        saveToLocalStorage();
+        renderAllViews();
+        
+        // Auto-save to Supabase
+        await syncDataToSupabase();
+        alert(`¡Carga completada! Se registraron ${parsedAprendices.length} aprendices en el sistema.`);
+      }
+    } catch (err) {
+      alert(`Error al leer archivo Excel: ${err.message}`);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadExcelTemplate() {
+  if (typeof XLSX === 'undefined') return;
+  const data = [
+    { 'TipoDocumento': 'CC', 'Documento': '1001234567', 'Nombres': 'Carlos', 'Apellidos': 'Pérez Gómez', 'Correo': 'carlos.perez@misena.edu.co', 'Estado': 'En Formación' },
+    { 'TipoDocumento': 'TI', 'Documento': '1002345678', 'Nombres': 'Ana María', 'Apellidos': 'Gómez Restrepo', 'Correo': 'ana.gomez@misena.edu.co', 'Estado': 'En Formación' }
+  ];
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+  XLSX.writeFile(wb, 'Plantilla_Aprendices_SENA.xlsx');
+}
+
+function exportAttendanceToExcel() {
+  if (typeof XLSX === 'undefined') return;
+  const ficha = getCurrentFicha();
+  const rows = APP_STATE.aprendices.map(a => {
+    const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
+    Object.keys(APP_STATE.asistencias).forEach(d => {
+      row[d] = APP_STATE.asistencias[d][a.documento] || 'P';
+    });
+    return row;
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
+  XLSX.writeFile(wb, `Reporte_Asistencia_Ficha_${ficha.codigo}.xlsx`);
+}
+
+function exportNotasToExcel() {
+  if (typeof XLSX === 'undefined') return;
+  const ficha = getCurrentFicha();
+  const rows = APP_STATE.aprendices.map(a => {
+    const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
+    APP_STATE.competencias.forEach(c => {
+      (c.resultados || []).forEach(r => {
+        const cal = APP_STATE.calificaciones[`${a.documento}_${r.id}`];
+        row[`${c.codigo}_${r.codigo}`] = cal ? (cal.estado === 'aprobado' ? 'A' : 'D') : 'A';
+      });
+    });
+    return row;
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SabanaNotas');
+  XLSX.writeFile(wb, `Sabana_Notas_Ficha_${ficha.codigo}.xlsx`);
+}
+
+// =========================================================================
+// 8. DISCIPLINARY ACTS (LLAMADOS DE ATENCION)
+// =========================================================================
+function prefillAndOpenLlamado(doc, tipo, motivo) {
+  const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
+  selLearner.innerHTML = APP_STATE.aprendices.map(a => `
+    <option value="${a.documento}" ${a.documento === doc ? 'selected' : ''}>
       ${a.nombres} ${a.apellidos} (${a.documento})
     </option>
   `).join('');
 
-  document.getElementById('nuevo-llamado-tipo').value = tipo;
-  document.getElementById('nuevo-llamado-fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('nuevo-llamado-motivo').value = motivo;
-  document.getElementById('nuevo-llamado-compromiso').value = 'El aprendiz se compromete a no reincidir en inasistencias injustificadas y ponerse al día en las actividades formativas.';
+  document.getElementById('select-nuevo-llamado-tipo').value = tipo;
+  document.getElementById('input-nuevo-llamado-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('input-nuevo-llamado-motivo').value = motivo;
+  document.getElementById('input-nuevo-llamado-compromiso').value = 'El aprendiz se compromete a no reincidir en inasistencias y presentar oportunamente las evidencias formativas.';
 
   openModal('modal-nuevo-llamado');
 }
+
+async function submitNuevoLlamado() {
+  const doc = document.getElementById('select-nuevo-llamado-aprendiz').value;
+  const learner = APP_STATE.aprendices.find(a => a.documento === doc);
+  const tipo = document.getElementById('select-nuevo-llamado-tipo').value;
+  const fecha = document.getElementById('input-nuevo-llamado-fecha').value;
+  const motivo = document.getElementById('input-nuevo-llamado-motivo').value;
+  const compromiso = document.getElementById('input-nuevo-llamado-compromiso').value;
+
+  const nuevo = {
+    id: `llamado_${Date.now()}`,
+    numeroActa: `ACTA-${new Date().getFullYear()}-00${APP_STATE.llamados.length + 1}`,
+    aprendizDocumento: doc,
+    aprendizNombre: learner ? `${learner.nombres} ${learner.apellidos}` : 'Aprendiz SENA',
+    tipo: tipo,
+    fecha: fecha,
+    motivo: motivo,
+    compromiso: compromiso
+  };
+
+  APP_STATE.llamados.unshift(nuevo);
+  saveToLocalStorage();
+  renderLlamadosCards();
+  renderSidebar();
+  closeModal('modal-nuevo-llamado');
+
+  // Sync to Supabase
+  if (supabaseClient) {
+    await supabaseClient.from('llamados_atencion').insert({
+      numero_acta: nuevo.numeroActa,
+      aprendiz_documento: nuevo.aprendizDocumento,
+      aprendiz_nombre: nuevo.aprendizNombre,
+      tipo: nuevo.tipo,
+      fecha: nuevo.fecha,
+      motivo: nuevo.motivo,
+      compromiso: nuevo.compromiso
+    });
+  }
+
+  openPrintableActaModal(nuevo.id);
+}
+
+function openPrintableActaModal(id) {
+  const l = APP_STATE.llamados.find(item => item.id === id);
+  if (!l) return;
+
+  const ficha = getCurrentFicha();
+  document.getElementById('acta-doc-numero').textContent = l.numeroActa;
+  document.getElementById('acta-doc-fecha').textContent = l.fecha;
+  document.getElementById('acta-doc-aprendiz').textContent = l.aprendizNombre;
+  document.getElementById('acta-doc-documento').textContent = l.aprendizDocumento;
+  document.getElementById('acta-doc-ficha').textContent = `${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
+  document.getElementById('acta-doc-tipo').textContent = l.tipo === 'inasistencia' ? 'Inasistencia Injustificada (3 Faltas)' : 'Compromiso Académico';
+  document.getElementById('acta-doc-motivo').textContent = l.motivo;
+  document.getElementById('acta-doc-compromiso').textContent = l.compromiso;
+  document.getElementById('acta-doc-firma-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+
+  openModal('modal-acta-pdf');
+}
+
+function copySqlScript() {
+  const code = document.getElementById('code-sql-snippet').innerText;
+  navigator.clipboard.writeText(code);
+  alert('¡Script SQL copiado al portapapeles!');
+}
+
+// =========================================================================
+// 9. INITIALIZATION AT DOM CONTENT LOADED
+// =========================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  loadFromLocalStorage();
+
+  // Populate nuevo llamado learners
+  const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
+  if (selLearner) {
+    selLearner.innerHTML = APP_STATE.aprendices.map(a => `
+      <option value="${a.documento}">${a.nombres} ${a.apellidos} (${a.documento})</option>
+    `).join('');
+  }
+
+  // Check login state: Default is login screen
+  const isLogged = localStorage.getItem('academix_logged_in') === 'true';
+  if (isLogged) {
+    APP_STATE.isLoggedIn = true;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-container').classList.remove('hidden');
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('app-container').classList.add('hidden');
+    selectLoginRole('instructor');
+  }
+
+  // Fetch real data from Supabase immediately
+  await fetchRealDataFromSupabase();
+  renderAllViews();
+});

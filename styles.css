@@ -1,30 +1,32 @@
 /* ==========================================================================
-   ACADEMIX SENA - Estilos Standalone HTML5
-   Colores Institucionales SENA:
-   - Verde SENA: #39A900
-   - Azul Marino SENA: #00324D
-   - Azul Institucional: #002B7F
+   ACADEMIX SENA - Institutional CSS Stylesheet
+   Colores Institucionales: Azul SENA #002B7F, Verde SENA #39A900, Marino #00324D
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Merriweather:wght@400;700;900&display=swap');
+
 :root {
-  --sena-green: #39A900;
-  --sena-green-dark: #2d8500;
-  --sena-green-light: #e8f7e2;
-  --sena-navy: #00324D;
-  --sena-blue: #002B7F;
-  --sena-blue-light: #eef2ff;
+  --color-sena-blue: #002B7F;
+  --color-sena-navy: #00324D;
+  --color-sena-green: #39A900;
+  --color-bg: #f8fafc;
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: #0f172a;
 }
 
-/* Custom scrollbars */
+.font-serif {
+  font-family: 'Merriweather', Georgia, serif;
+}
+
+.font-numbers {
+  font-family: 'Inter', Consolas, monospace;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -34,79 +36,32 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Badge styles */
-.badge-aprobado {
-  background-color: #dcfce7;
-  color: #166534;
-  border: 1px solid #bbf7d0;
-}
-.badge-no-aprobado {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-.badge-pendiente {
-  background-color: #fef9c3;
-  color: #854d0e;
-  border: 1px solid #fef08a;
-}
-
-.badge-presente {
-  background-color: #dcfce7;
-  color: #15803d;
-}
-.badge-injustificada {
-  background-color: #fee2e2;
-  color: #b91c1c;
-}
-.badge-justificada {
-  background-color: #fef3c7;
-  color: #b45309;
-}
-.badge-retardo {
-  background-color: #ffedd5;
-  color: #c2410c;
-}
-.badge-excusado {
-  background-color: #e0e7ff;
-  color: #4338ca;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Print Styles for SENA Official PDF Format */
+/* Print Optimization for Official SENA Document */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  #acta-print-area, #acta-print-area * {
-    visibility: visible;
-  }
-  #acta-print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background: white;
-    color: black;
-  }
-  .no-print {
+  .no-print, header, aside, button, nav, #login-screen {
     display: none !important;
+  }
+  body, #app-container, main {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #modal-acta-pdf {
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  #modal-acta-pdf > div {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
   }
 }
