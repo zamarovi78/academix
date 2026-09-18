@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACADEMIX SENA - Sistema de Gestión Académica y Formativa</title>
+  <meta name="description" content="Plataforma integral para gestión de fichas, nóminas de aprendices, toma de asistencia, evaluaciones por competencias y actas disciplinarias del SENA.">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2339A900'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sena: {
+              green: '#39A900',
+              'green-dark': '#2d8500',
+              'green-light': '#e8f7e2',
+              navy: '#00324D',
+              blue: '#002B7F',
+              'blue-light': '#eef2ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SheetJS (xlsx) for Excel Import & Export CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Custom CSS Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#39A900] to-[#2d8500] text-white flex items-center justify-center font-black text-xl shadow-sm tracking-tighter">
+            S
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-slate-900 tracking-tight text-lg">ACADEMIX</span>
+              <span class="bg-[#39A900]/15 text-[#2d8500] text-[11px] font-black px-1.5 py-0.5 rounded border border-[#39A900]/30 tracking-wider">
+                SENA
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Gestión Formativa y Evaluación</p>
+          </div>
+        </div>
+
+        <!-- Ficha Selector & Controls -->
+        <div class="flex items-center gap-2 md:gap-3">
+          
+          <!-- Ficha Dropdown -->
+          <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+            <span class="text-xs font-semibold text-slate-500 px-2 hidden md:inline">Ficha:</span>
+            <select id="select-ficha" class="bg-white text-xs font-bold text-slate-800 py-1 px-2.5 rounded border border-slate-200 shadow-2xs focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Supabase Status Button -->
+          <button id="btn-open-supabase" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition cursor-pointer" title="Ver conexión con Supabase">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="hidden md:inline">Supabase</span>
+          </button>
+
+          <!-- Perfil Instructor Button -->
+          <button id="btn-open-perfil" class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 transition cursor-pointer text-xs font-bold text-slate-700" title="Perfil del Instructor">
+            <div id="header-avatar" class="w-7 h-7 rounded-full bg-slate-300 overflow-hidden flex items-center justify-center text-slate-600 text-xs font-bold shrink-0">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </div>
+            <span id="header-instructor-name" class="hidden lg:inline font-medium text-slate-800 max-w-[140px] truncate">Instructor</span>
+          </button>
+
+          <!-- Role & Login Button -->
+          <button id="btn-open-login" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00324D] hover:bg-[#002B7F] text-white text-xs font-bold shadow-xs transition cursor-pointer">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span id="btn-role-label">Instructor</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= NAVIGATION TABS ================= -->
+      <nav class="flex items-center gap-1 overflow-x-auto py-2 border-t border-slate-100 text-xs font-bold no-scrollbar">
+        <button data-view="panel-general" class="nav-tab active flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Panel General</span>
+        </button>
+        <button data-view="cargar-info" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+          <span>Cargar Información</span>
+        </button>
+        <button data-view="asistencia" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+          <span>Toma Asistencia</span>
+        </button>
+        <button data-view="calificaciones" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="check-square" class="w-4 h-4"></i>
+          <span>Calificaciones</span>
+        </button>
+        <button data-view="consulta-asistencia" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          <span>Consulta Asistencia</span>
+        </button>
+        <button data-view="consulta-notas" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="line-chart" class="w-4 h-4"></i>
+          <span>Consulta Notas</span>
+        </button>
+        <button data-view="llamados" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+          <span>Llamados de Atención</span>
+        </button>
+        <button data-view="aprendiz" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition shrink-0">
+          <i data-lucide="graduation-cap" class="w-4 h-4 text-[#002B7F]"></i>
+          <span>Vista Aprendiz</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT AREA ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    
+    <!-- VIEW 1: PANEL GENERAL -->
+    <section id="view-panel-general" class="view-content space-y-6">
+      <!-- Ficha Banner -->
+      <div class="bg-gradient-to-r from-[#00324D] to-[#002B7F] rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="bg-[#39A900] text-white text-xs font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                Ficha <span id="banner-ficha-code">2670142</span>
+              </span>
+              <span id="banner-ficha-jornada" class="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+                Jornada Diurna
+              </span>
+            </div>
+            <h1 id="banner-ficha-programa" class="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Tecnólogo en Análisis y Desarrollo de Software (ADSO)
+            </h1>
+            <p class="text-white/80 text-xs sm:text-sm mt-1 flex items-center gap-4">
+              <span><strong>Centro:</strong> <span id="banner-ficha-centro">Centro de Servicios y Gestión Empresarial</span></span>
+              <span><strong>Ambiente:</strong> <span id="banner-ficha-ambiente">Sistemas 204</span></span>
+            </p>
+          </div>
+          <div class="bg-white/10 backdrop-blur-xs p-3.5 rounded-xl border border-white/20 text-xs space-y-1">
+            <div class="text-white/70">Instructor Líder:</div>
+            <div id="banner-ficha-instructor" class="font-bold text-white text-sm">Ing. Carlos Rodríguez</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Bento Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Total Aprendices</span>
+            <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
+          </div>
+          <div id="metric-total-aprendices" class="text-2xl font-black text-slate-900 mt-1">30</div>
+          <div class="text-[11px] text-emerald-600 font-semibold mt-1">100% Formación Activa</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Competencias</span>
+            <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
+          </div>
+          <div id="metric-total-competencias" class="text-2xl font-black text-slate-900 mt-1">4</div>
+          <div class="text-[11px] text-slate-500 font-semibold mt-1">Diseño, Frontend, Backend & BD</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Resultados (RAPs)</span>
+            <i data-lucide="target" class="w-4 h-4 text-indigo-600"></i>
+          </div>
+          <div id="metric-total-raps" class="text-2xl font-black text-slate-900 mt-1">8</div>
+          <div class="text-[11px] text-slate-500 font-semibold mt-1">Evidencias Cualitativas</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Actas / Llamados</span>
+            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i>
+          </div>
+          <div id="metric-total-llamados" class="text-2xl font-black text-slate-900 mt-1">0</div>
+          <div class="text-[11px] text-amber-600 font-semibold mt-1">Seguimiento Disciplinario</div>
+        </div>
+      </div>
+
+      <!-- Competencias & Learners Overview -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Competencias Card -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4 text-emerald-600"></i>
+              <span>Competencias Formativas Asignadas</span>
+            </h2>
+            <span class="text-xs text-slate-500 font-medium">Programa ADSO</span>
+          </div>
+          <div id="dashboard-competencias-list" class="space-y-3">
+            <!-- Dynamic Competencias -->
+          </div>
+        </div>
+
+        <!-- Quick Summary & Actions -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+          <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+            <span>Acciones Rápidas</span>
+          </h2>
+          <div class="space-y-2 text-xs">
+            <button onclick="switchView('asistencia')" class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 font-bold text-slate-800 transition flex items-center justify-between cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i data-lucide="calendar-check-2" class="w-4 h-4 text-emerald-600"></i>
+                <span>Tomar Asistencia de Hoy</span>
+              </span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </button>
+            <button onclick="switchView('calificaciones')" class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 font-bold text-slate-800 transition flex items-center justify-between cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i data-lucide="check-square" class="w-4 h-4 text-blue-600"></i>
+                <span>Evaluar Evidencias / RAPs</span>
+              </span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </button>
+            <button onclick="switchView('cargar-info')" class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 font-bold text-slate-800 transition flex items-center justify-between cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-purple-600"></i>
+                <span>Importar Excel de Sofía Plus</span>
+              </span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: CARGAR INFORMACION -->
+    <section id="view-cargar-info" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-[#39A900]"></i>
+            <span>Cargar y Sincronizar Información de Ficha</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            Importa nóminas oficiales de aprendices y competencias desde archivos Excel (.xlsx) o CSV descargados de Sofía Plus.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <!-- Excel Drop Area -->
+          <div class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-6 text-center transition bg-slate-50 flex flex-col items-center justify-center cursor-pointer relative" id="drop-zone-excel">
+            <input type="file" id="input-excel-file" accept=".xlsx, .xls, .csv" class="absolute inset-0 opacity-0 cursor-pointer">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
+              <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm font-bold text-slate-800">Seleccionar o arrastrar archivo Excel/CSV</span>
+            <span class="text-xs text-slate-500 mt-1">Soporta reportes de Sofía Plus con columnas: Documento, Nombres, Apellidos, Correo, etc.</span>
+          </div>
+
+          <!-- Template & Manual Creation -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-slate-900 text-xs block mb-1">Plantilla de Ejemplo Excel</span>
+              <p class="text-xs text-slate-600">Descarga la plantilla estructurada para cargar rápidamente aprendices y competencias con sus contraseñas iniciales.</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="btn-download-template" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-lg border border-slate-300 text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Plantilla</span>
+              </button>
+              <button id="btn-sync-to-supabase-direct" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                <span>Sincronizar con Supabase</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loaded Learners Table Preview -->
+        <div class="pt-4 border-t border-slate-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-900 text-xs">Aprendices Cargados en la Ficha (<span id="count-preview-aprendices">0</span>)</h3>
+            <span class="text-[11px] text-slate-500">Contraseñas iniciales generadas por defecto</span>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">#</th>
+                  <th class="p-3">Documento</th>
+                  <th class="p-3">Nombres & Apellidos</th>
+                  <th class="p-3">Correo Electrónico</th>
+                  <th class="p-3">Contraseña</th>
+                  <th class="p-3">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-cargar-aprendices" class="divide-y divide-slate-100 bg-white">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: TOMA ASISTENCIA -->
+    <section id="view-asistencia" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="calendar-check-2" class="w-5 h-5 text-emerald-600"></i>
+              <span>Registro Diario de Asistencia</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Registra los estados de asistencia. 3 faltas injustificadas sugieren la apertura de acta disciplinaria.
+            </p>
+          </div>
+
+          <!-- Date Selector & Quick Set -->
+          <div class="flex items-center gap-2">
+            <input type="date" id="input-asistencia-fecha" class="text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+            <button id="btn-marcar-todos-presentes" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Todos Presentes</span>
+            </button>
+            <button id="btn-guardar-asistencia" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-xs transition cursor-pointer flex items-center gap-1.5">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              <span>Guardar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">#</th>
+                <th class="p-3">Aprendiz</th>
+                <th class="p-3">Documento</th>
+                <th class="p-3 text-center">Estado de Asistencia</th>
+                <th class="p-3">Observaciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-toma-asistencia" class="divide-y divide-slate-100 bg-white">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: CALIFICACIONES (EVIDENCIAS Y RAPS) -->
+    <section id="view-calificaciones" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="check-square" class="w-5 h-5 text-blue-600"></i>
+              <span>Calificación Cualitativa de Evidencias (RAPs)</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Juicios del modelo pedagógico SENA: <strong>Aprobado (A)</strong> o <strong>No Aprobado (D)</strong>.
+            </p>
+          </div>
+
+          <!-- Filter Competencia & RAP -->
+          <div class="flex items-center gap-2">
+            <select id="select-calificar-competencia" class="text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 max-w-[260px] truncate cursor-pointer">
+              <!-- Populated dynamically -->
+            </select>
+            <button id="btn-guardar-calificaciones" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition cursor-pointer flex items-center gap-1.5">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              <span>Guardar Juicios</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Calificaciones Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">#</th>
+                <th class="p-3">Aprendiz</th>
+                <th class="p-3">Documento</th>
+                <th class="p-3 text-center">Juicio Evaluativo</th>
+                <th class="p-3">Retroalimentación / Evidencia</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-calificaciones" class="divide-y divide-slate-100 bg-white">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: CONSULTA ASISTENCIA -->
+    <section id="view-consulta-asistencia" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="search" class="w-5 h-5 text-emerald-600"></i>
+              <span>Sábana y Reporte Histórico de Asistencia</span>
+            </h2>
+            <p class="text-xs text-slate-500">Visualiza el historial acumulado de faltas justificadas, injustificadas y retardos.</p>
+          </div>
+          <button id="btn-export-asistencia-excel" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs rounded-lg shadow-2xs flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+            <span>Exportar Excel</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Aprendiz</th>
+                <th class="p-3 text-center">Asistencias</th>
+                <th class="p-3 text-center">Faltas Injust.</th>
+                <th class="p-3 text-center">Faltas Just.</th>
+                <th class="p-3 text-center">Retardos</th>
+                <th class="p-3 text-center">% Asistencia</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-consulta-asistencia" class="divide-y divide-slate-100 bg-white">
+              <!-- Dynamic -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: CONSULTA NOTAS (SABANA DE CALIFICACIONES) -->
+    <section id="view-consulta-notas" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="line-chart" class="w-5 h-5 text-blue-600"></i>
+              <span>Sábana de Juicios Evaluativos por RAP</span>
+            </h2>
+            <p class="text-xs text-slate-500">Monitoreo de estado de aprobación por aprendiz y competencia.</p>
+          </div>
+          <button id="btn-export-notas-excel" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs rounded-lg shadow-2xs flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-600"></i>
+            <span>Exportar Sábana Excel</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table id="table-sabana-notas" class="w-full text-left text-xs border-collapse">
+            <!-- Dynamic header and rows -->
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 7: LLAMADOS DE ATENCION / ACTAS DISCIPLINARIAS -->
+    <section id="view-llamados" class="view-content hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>
+              <span>Llamados de Atención & Actas Oficiales SENA</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Genera actas formales con numeración oficial para firmas del instructor y aprendiz.
+            </p>
+          </div>
+          <button id="btn-abrir-nuevo-llamado" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Registrar Nuevo Llamado</span>
+          </button>
+        </div>
+
+        <div id="container-llamados-list" class="space-y-3">
+          <!-- Dynamic Llamados List -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 8: VISTA APRENDIZ -->
+    <section id="view-aprendiz" class="view-content hidden space-y-6">
+      <!-- Apprentice Profile Card with Supabase Photo Upload -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+          
+          <!-- Photo Upload / Avatar Container -->
+          <div class="relative group">
+            <div id="aprendiz-avatar-img" class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-xl shadow-xs">
+              <i data-lucide="user" class="w-10 h-10"></i>
+            </div>
+            <label class="absolute -bottom-2 -right-2 p-2 rounded-xl bg-[#39A900] hover:bg-[#2d8500] text-white shadow-md cursor-pointer transition transform hover:scale-105" title="Subir foto a Supabase Storage">
+              <i data-lucide="camera" class="w-4 h-4"></i>
+              <input type="file" id="input-foto-aprendiz" accept="image/*" class="hidden">
+            </label>
+          </div>
+
+          <!-- Details -->
+          <div class="flex-1 text-center sm:text-left space-y-1">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h2 id="card-aprendiz-nombre" class="text-lg font-black text-slate-900">Juan Pérez Gómez</h2>
+              <span id="card-aprendiz-estado" class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                En Formación
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">
+              Documento: <strong id="card-aprendiz-doc" class="text-slate-800">1001234567</strong> • Correo: <strong id="card-aprendiz-email" class="text-slate-800">juan.perez@misena.edu.co</strong>
+            </p>
+            <p class="text-xs text-slate-500">
+              Programa: <strong id="card-aprendiz-programa">Análisis y Desarrollo de Software</strong> (Ficha <span id="card-aprendiz-ficha">2670142</span>)
+            </p>
+            <div id="aprendiz-photo-status" class="text-[11px] font-medium text-emerald-700 hidden mt-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apprentice Metrics & Records -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Attendance Record -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-3">
+          <h3 class="font-bold text-slate-900 text-xs flex items-center gap-2 border-b border-slate-100 pb-2">
+            <i data-lucide="calendar-check-2" class="w-4 h-4 text-emerald-600"></i>
+            <span>Historial de Asistencia Personal</span>
+          </h3>
+          <div id="aprendiz-asistencia-summary" class="text-xs space-y-2">
+            <!-- Dynamic -->
+          </div>
+        </div>
+
+        <!-- Evaluated RAPs -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-3">
+          <h3 class="font-bold text-slate-900 text-xs flex items-center gap-2 border-b border-slate-100 pb-2">
+            <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
+            <span>Juicios Evaluativos Obtenidos</span>
+          </h3>
+          <div id="aprendiz-calificaciones-summary" class="text-xs space-y-2 max-h-60 overflow-y-auto">
+            <!-- Dynamic -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. LOGIN & ROLE MODAL -->
+  <div id="modal-login" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i>
+          <span>Acceso al Sistema ACADEMIX</span>
+        </h3>
+        <button onclick="closeModal('modal-login')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Rol de Acceso:</label>
+          <select id="login-role" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-bold cursor-pointer">
+            <option value="instructor">Instructor (Líder / Técnico)</option>
+            <option value="aprendiz">Aprendiz</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Número de Documento:</label>
+          <input type="text" id="login-documento" placeholder="Ej: 1001234567" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Contraseña:</label>
+          <input type="password" id="login-password" placeholder="Contraseña de acceso" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+          <span class="text-[10px] text-slate-400 mt-1 block">Por defecto para aprendices: su documento</span>
+        </div>
+
+        <div id="login-error-msg" class="text-red-600 font-bold text-[11px] hidden"></div>
+
+        <button id="btn-submit-login" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition cursor-pointer">
+          Iniciar Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SUPABASE MODAL (STATUS, SQL & STORAGE GUIDE) -->
+  <div id="modal-supabase" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+            <i data-lucide="database" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Conexión Supabase & Storage</h3>
+            <p class="text-[11px] text-slate-500">Gestión de base de datos en la nube y fotos de perfil</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-supabase')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Supabase Modal Tabs -->
+      <div class="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs">
+        <button class="supabase-tab-btn active px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white" data-subtab="status">Estado</button>
+        <button class="supabase-tab-btn px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:bg-slate-100" data-subtab="storage">Storage Fotos</button>
+        <button class="supabase-tab-btn px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:bg-slate-100" data-subtab="sql">Permisos SQL</button>
+      </div>
+
+      <!-- Subtab 1: Status -->
+      <div id="supabase-tab-status" class="supabase-subtab space-y-3 text-xs">
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="flex justify-between"><span class="text-slate-500">Proyecto URL:</span><span class="font-mono font-bold text-slate-800">https://gusbmqyaiacyllexfkkc.supabase.co</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Estado:</span><span class="font-bold text-emerald-600">Activo (PostgreSQL)</span></div>
+        </div>
+
+        <div class="flex gap-2">
+          <button id="btn-sync-supabase-push" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+            <span>Enviar a Supabase</span>
+          </button>
+          <button id="btn-sync-supabase-pull" class="flex-1 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+            <i data-lucide="download-cloud" class="w-4 h-4"></i>
+            <span>Importar de Supabase</span>
+          </button>
+        </div>
+        <div id="supabase-sync-status-msg" class="text-[11px] p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hidden"></div>
+      </div>
+
+      <!-- Subtab 2: Storage Guide -->
+      <div id="supabase-tab-storage" class="supabase-subtab hidden space-y-3 text-xs">
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900">
+          <span class="font-bold block mb-1">Pasos para habilitar fotos en Supabase Storage:</span>
+          <ol class="list-decimal list-inside space-y-1 text-[11px]">
+            <li>En Supabase, entra a <strong>Storage</strong> › <strong>New Bucket</strong>.</li>
+            <li>Nombre del bucket: <code class="font-mono font-bold bg-white px-1 rounded">perfiles</code>.</li>
+            <li>Activa la casilla <strong>"Public bucket"</strong> y guarda.</li>
+            <li>Ejecuta el script de la pestaña <strong>"Permisos SQL"</strong> para habilitar las políticas de acceso.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Subtab 3: SQL Script -->
+      <div id="supabase-tab-sql" class="supabase-subtab hidden space-y-3 text-xs">
+        <div class="relative">
+          <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] overflow-x-auto max-h-48 leading-relaxed" id="sql-script-content">
+-- Script de Creación y Permisos Supabase
+ALTER TABLE IF EXISTS public.aprendices ADD COLUMN IF NOT EXISTS foto TEXT;
+ALTER TABLE IF EXISTS public.instructores ADD COLUMN IF NOT EXISTS foto TEXT;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('perfiles', 'perfiles', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+CREATE POLICY "Public Read perfiles" ON storage.objects FOR SELECT USING (bucket_id = 'perfiles');
+CREATE POLICY "Public Insert perfiles" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'perfiles');
+          </pre>
+          <button id="btn-copy-sql" class="absolute top-2 right-2 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 text-[10px] font-bold rounded shadow-sm cursor-pointer">
+            Copiar SQL
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. INSTRUCTOR PROFILE MODAL -->
+  <div id="modal-perfil-instructor" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>Perfil del Instructor SENA</span>
+        </h3>
+        <button onclick="closeModal('modal-perfil-instructor')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Photo & Upload to Storage -->
+        <div class="flex items-center gap-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <div class="w-16 h-16 rounded-xl bg-slate-200 border overflow-hidden flex items-center justify-center" id="instructor-profile-preview">
+            <i data-lucide="user" class="w-8 h-8 text-slate-400"></i>
+          </div>
+          <div>
+            <label class="px-3 py-1.5 bg-[#39A900] hover:bg-[#2d8500] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer inline-block">
+              <i data-lucide="camera" class="w-3.5 h-3.5 inline"></i>
+              <span>Subir Foto a Supabase Storage</span>
+              <input type="file" id="input-foto-instructor" accept="image/*" class="hidden">
+            </label>
+            <span class="text-[10px] text-slate-500 block mt-1">Se almacena en el bucket público 'perfiles'</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Nombres:</label>
+            <input type="text" id="prof-nombres" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Apellidos:</label>
+            <input type="text" id="prof-apellidos" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Cédula / Documento:</label>
+            <input type="text" id="prof-documento" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Correo Electrónico:</label>
+            <input type="email" id="prof-email" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Cargo / Especialidad:</label>
+            <input type="text" id="prof-cargo" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Centro de Formación:</label>
+            <input type="text" id="prof-centro" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+        </div>
+
+        <button id="btn-guardar-perfil-instructor" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition cursor-pointer">
+          Guardar y Sincronizar en Supabase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ACTA DISCIPLINARIA PDF MODAL (PRINT-READY) -->
+  <div id="modal-acta-pdf" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-3xl w-full p-6 space-y-4 max-h-[95vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 no-print">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="file-text" class="w-4 h-4 text-amber-600"></i>
+          <span>Acta Oficial de Llamado de Atención SENA</span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Imprimir / Guardar PDF</span>
+          </button>
+          <button onclick="closeModal('modal-acta-pdf')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Format Area -->
+      <div id="acta-print-area" class="border border-slate-300 p-8 rounded-xl bg-white text-slate-900 text-xs space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b-2 border-[#39A900] pb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-[#39A900] text-white flex items-center justify-center font-black text-2xl">S</div>
+            <div>
+              <h2 class="font-black text-base text-slate-900 uppercase">Servicio Nacional de Aprendizaje - SENA</h2>
+              <p class="text-[11px] text-slate-600 font-semibold">Dirección de Formación Profesional Integral • Comité de Evaluación y Seguimiento</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="font-mono font-bold text-sm bg-slate-100 px-2.5 py-1 rounded border border-slate-300" id="acta-pdf-numero">ACTA-2026-001</span>
+          </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <div><strong>Fecha:</strong> <span id="acta-pdf-fecha">18/09/2026</span></div>
+          <div><strong>Tipo de Falta:</strong> <span id="acta-pdf-tipo" class="uppercase font-bold text-amber-700">Inasistencia Injustificada</span></div>
+          <div><strong>Ficha:</strong> <span id="acta-pdf-ficha">2670142 - ADSO</span></div>
+          <div><strong>Aprendiz:</strong> <span id="acta-pdf-aprendiz">Juan Pérez (1001234567)</span></div>
+        </div>
+
+        <!-- Description & Compromiso -->
+        <div class="space-y-3">
+          <div>
+            <strong class="block text-slate-800 mb-1">Motivo y Hechos:</strong>
+            <p id="acta-pdf-motivo" class="bg-slate-50 p-3 rounded border border-slate-200 text-slate-700 leading-relaxed"></p>
+          </div>
+          <div>
+            <strong class="block text-slate-800 mb-1">Compromiso Formativo Adquirido:</strong>
+            <p id="acta-pdf-compromiso" class="bg-slate-50 p-3 rounded border border-slate-200 text-slate-700 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="grid grid-cols-2 gap-12 pt-12">
+          <div class="border-t border-slate-400 pt-2 text-center">
+            <strong id="acta-pdf-firma-instructor" class="block font-bold">Ing. Carlos Rodríguez</strong>
+            <span class="text-slate-500 text-[10px]">Instructor Líder / Ejecutor</span>
+          </div>
+          <div class="border-t border-slate-400 pt-2 text-center">
+            <strong id="acta-pdf-firma-aprendiz" class="block font-bold">Firma del Aprendiz</strong>
+            <span class="text-slate-500 text-[10px]">C.C. / T.I. Aprendiz SENA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. NUEVO LLAMADO DE ATENCION MODAL -->
+  <div id="modal-nuevo-llamado" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+          <span>Registrar Llamado de Atención</span>
+        </h3>
+        <button onclick="closeModal('modal-nuevo-llamado')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Aprendiz:</label>
+          <select id="nuevo-llamado-aprendiz" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-bold cursor-pointer">
+            <!-- Dynamic -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Tipo:</label>
+            <select id="nuevo-llamado-tipo" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-bold cursor-pointer">
+              <option value="inasistencia">Inasistencia Injustificada (3+)</option>
+              <option value="academico">Bajo Rendimiento Académico</option>
+              <option value="disciplinario">Incumplimiento al Reglamento</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Fecha de Falta:</label>
+            <input type="date" id="nuevo-llamado-fecha" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Descripción de los Hechos:</label>
+          <textarea id="nuevo-llamado-motivo" rows="2" placeholder="Detalle la inasistencia o falta cometida..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2"></textarea>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Compromiso Formativo:</label>
+          <textarea id="nuevo-llamado-compromiso" rows="2" placeholder="Acciones correctivas que asume el aprendiz..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2"></textarea>
+        </div>
+
+        <button id="btn-guardar-nuevo-llamado" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-xs transition cursor-pointer">
+          Generar Acta y Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic JS -->
+  <script src="app.js"></script>
+</body>
+</html>
