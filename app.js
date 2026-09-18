@@ -77,7 +77,7 @@ const APP_STATE = {
   }
 };
 
-// Fallback Initial Competencias and Learner data (if database was freshly created)
+// Default Initial Competencias with RAPs
 const SEED_COMPETENCIAS = [
   {
     codigo: '220501096',
@@ -156,6 +156,7 @@ async function fetchRealDataFromSupabase() {
     if (!apErr && apData && apData.length > 0) {
       APP_STATE.aprendices = apData.map(a => ({
         id: a.id || a.documento,
+        tipoDoc: a.tipo_documento || 'CC',
         documento: a.documento,
         nombres: a.nombres,
         apellidos: a.apellidos || '',
@@ -173,7 +174,7 @@ async function fetchRealDataFromSupabase() {
     const { data: compData } = await supabaseClient.from('competencias').select('*');
     if (compData && compData.length > 0) {
       APP_STATE.competencias = compData;
-    } else {
+    } else if (APP_STATE.competencias.length === 0) {
       APP_STATE.competencias = SEED_COMPETENCIAS;
     }
 
@@ -216,13 +217,16 @@ async function syncDataToSupabase() {
   try {
     const currentFicha = getCurrentFicha();
 
-    // 1. Upsert Ficha
-    await supabaseClient.from('fichas').upsert({
-      codigo: currentFicha.codigo,
-      programa: currentFicha.programa,
-      jornada: currentFicha.jornada,
-      ambiente: currentFicha.ambiente
-    }, { onConflict: 'codigo' });
+    // 1. Upsert Fichas
+    if (APP_STATE.fichas.length > 0) {
+      const fichasPayload = APP_STATE.fichas.map(f => ({
+        codigo: f.codigo,
+        programa: f.programa,
+        jornada: f.jornada,
+        ambiente: f.ambiente
+      }));
+      await supabaseClient.from('fichas').upsert(fichasPayload, { onConflict: 'codigo' });
+    }
 
     // 2. Upsert Aprendices
     if (APP_STATE.aprendices.length > 0) {
@@ -234,13 +238,25 @@ async function syncDataToSupabase() {
         usuario: a.documento,
         password: a.password || a.documento,
         estado_matricula: a.estado || 'En Formación',
-        foto: a.foto || null
+        foto: a.foto || null,
+        ficha_codigo: currentFicha.codigo
       }));
 
       await supabaseClient.from('aprendices').upsert(learnersPayload, { onConflict: 'documento' });
     }
 
-    // 3. Upsert Instructor
+    // 3. Upsert Competencias
+    if (APP_STATE.competencias.length > 0) {
+      const compPayload = APP_STATE.competencias.map(c => ({
+        codigo: c.codigo,
+        nombre: c.nombre,
+        horas: c.horas || 160,
+        resultados: c.resultados || []
+      }));
+      await supabaseClient.from('competencias').upsert(compPayload, { onConflict: 'codigo' });
+    }
+
+    // 4. Upsert Instructor
     await supabaseClient.from('instructores').upsert({
       documento: APP_STATE.instructorProfile.documento,
       nombres: APP_STATE.instructorProfile.nombres,
@@ -253,9 +269,9 @@ async function syncDataToSupabase() {
     }, { onConflict: 'documento' });
 
     if (alertBox) {
-      alertBox.textContent = `¡Sincronización exitosa! ${APP_STATE.aprendices.length} aprendices y ficha guardados en Supabase.`;
+      alertBox.textContent = `¡Sincronización exitosa! ${APP_STATE.aprendices.length} aprendices, ${APP_STATE.fichas.length} fichas y ${APP_STATE.competencias.length} competencias guardadas en Supabase.`;
     }
-    alert(`¡Sincronización exitosa con Supabase! ${APP_STATE.aprendices.length} aprendices registrados.`);
+    alert(`¡Sincronización exitosa con Supabase! ${APP_STATE.aprendices.length} aprendices, ${APP_STATE.fichas.length} fichas y competencias actualizadas.`);
   } catch (err) {
     if (alertBox) alertBox.textContent = `Aviso: ${err.message}`;
     alert(`Aviso de Supabase: ${err.message}`);
@@ -434,7 +450,6 @@ function handleLoginSubmit(event) {
       navigateToView('vista-aprendiz');
       return;
     } else {
-      // Allow login with document
       executeLoginSuccess('aprendiz', `Aprendiz ${user}`, user);
       navigateToView('vista-aprendiz');
       return;
@@ -522,6 +537,7 @@ function navigateToView(viewId) {
   }
 
   // Refresh target view data
+  if (viewId === 'cargar') renderCargarInfo();
   if (viewId === 'asistencia') renderAttendanceTable();
   if (viewId === 'calificaciones') renderCalificacionesTable();
   if (viewId === 'consulta-asistencia') renderConsultaAsistenciaTable();
@@ -554,9 +570,9 @@ function toggleUserDropdown() {
 function selectFicha(codigo) {
   APP_STATE.currentFichaCodigo = codigo;
   saveToLocalStorage();
-  toggleFichaDropdown();
+  const menu = document.getElementById('dropdown-fichas-menu');
+  if (menu) menu.classList.add('hidden');
   renderAllViews();
-  fetchRealDataFromSupabase();
 }
 
 function openModal(id) {
@@ -577,7 +593,279 @@ function closeModal(id) {
 }
 
 // =========================================================================
-// 5. RENDERING LOGIC FOR ALL VIEWS
+// 5. CARGAR INFORMACION: 3 SUB-TABS (FICHAS, COMPETENCIAS & APRENDICES)
+// =========================================================================
+let currentCargarSubTab = 3;
+
+function setCargarTab(tabNum) {
+  currentCargarSubTab = tabNum;
+
+  // Toggle tab buttons style
+  for (let i = 1; i <= 3; i++) {
+    const btn = document.getElementById(`tab-cargar-btn-${i}`);
+    const content = document.getElementById(`cargar-subtab-${i}`);
+    if (i === tabNum) {
+      if (btn) {
+        btn.className = 'cargar-tab-btn flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer bg-[#002B7F] text-white shadow-xs';
+      }
+      if (content) content.classList.remove('hidden');
+    } else {
+      if (btn) {
+        btn.className = 'cargar-tab-btn flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:bg-slate-50';
+      }
+      if (content) content.classList.add('hidden');
+    }
+  }
+
+  renderCargarInfo();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// 5.1 CREAR Y GESTIONAR FICHAS
+async function handleCreateFicha(event) {
+  event.preventDefault();
+  const codigo = document.getElementById('form-ficha-codigo').value.trim();
+  const programa = document.getElementById('form-ficha-programa').value.trim();
+  const jornada = document.getElementById('form-ficha-jornada').value;
+  const ambiente = document.getElementById('form-ficha-ambiente').value.trim();
+
+  if (!codigo || !programa) {
+    alert('Por favor ingrese el código y el programa de la ficha.');
+    return;
+  }
+
+  // Check if ficha already exists
+  const existingIdx = APP_STATE.fichas.findIndex(f => f.codigo === codigo);
+  const newFicha = {
+    codigo: codigo,
+    programa: programa,
+    jornada: jornada,
+    ambiente: ambiente || 'Ambiente de Formación',
+    instructorLider: APP_STATE.currentUserNombre,
+    centroFormacion: APP_STATE.instructorProfile.centroFormacion,
+    regional: 'Regional Antioquia'
+  };
+
+  if (existingIdx !== -1) {
+    APP_STATE.fichas[existingIdx] = newFicha;
+  } else {
+    APP_STATE.fichas.unshift(newFicha);
+  }
+
+  APP_STATE.currentFichaCodigo = codigo;
+  saveToLocalStorage();
+  renderAllViews();
+
+  // Reset Form
+  document.getElementById('form-ficha-codigo').value = '';
+  document.getElementById('form-ficha-programa').value = '';
+
+  // Upsert into Supabase
+  if (supabaseClient) {
+    await supabaseClient.from('fichas').upsert({
+      codigo: newFicha.codigo,
+      programa: newFicha.programa,
+      jornada: newFicha.jornada,
+      ambiente: newFicha.ambiente
+    }, { onConflict: 'codigo' });
+  }
+
+  alert(`¡Ficha ${codigo} creada y activada exitosamente!`);
+}
+
+function deleteFicha(codigo) {
+  if (APP_STATE.fichas.length <= 1) {
+    alert('Debe existir al menos una ficha en el sistema.');
+    return;
+  }
+  if (!confirm(`¿Está seguro de eliminar la ficha ${codigo}?`)) return;
+
+  APP_STATE.fichas = APP_STATE.fichas.filter(f => f.codigo !== codigo);
+  if (APP_STATE.currentFichaCodigo === codigo) {
+    APP_STATE.currentFichaCodigo = APP_STATE.fichas[0].codigo;
+  }
+  saveToLocalStorage();
+  renderAllViews();
+
+  if (supabaseClient) {
+    supabaseClient.from('fichas').delete().eq('codigo', codigo);
+  }
+}
+
+// 5.2 CREAR Y ASIGNAR COMPETENCIAS & RAPs
+async function handleCreateCompetencia(event) {
+  event.preventDefault();
+  const codigo = document.getElementById('form-comp-codigo').value.trim();
+  const nombre = document.getElementById('form-comp-nombre').value.trim();
+  const rapCodigo = document.getElementById('form-comp-rap-codigo').value.trim() || 'RAP-01';
+  const horas = Number(document.getElementById('form-comp-horas').value) || 160;
+  const rapDesc = document.getElementById('form-comp-rap-desc').value.trim();
+
+  if (!codigo || !nombre || !rapDesc) {
+    alert('Por favor complete el código, denominación y descripción del RAP.');
+    return;
+  }
+
+  const existingIdx = APP_STATE.competencias.findIndex(c => c.codigo === codigo);
+  const rapObj = {
+    id: `RAP_${Date.now()}`,
+    codigo: rapCodigo,
+    descripcion: rapDesc
+  };
+
+  if (existingIdx !== -1) {
+    // Append RAP if not already present
+    if (!APP_STATE.competencias[existingIdx].resultados) {
+      APP_STATE.competencias[existingIdx].resultados = [];
+    }
+    APP_STATE.competencias[existingIdx].resultados.push(rapObj);
+  } else {
+    // Create new Competency with RAP
+    const newComp = {
+      codigo: codigo,
+      nombre: nombre,
+      horas: horas,
+      estado: 'Activo',
+      resultados: [rapObj]
+    };
+    APP_STATE.competencias.unshift(newComp);
+  }
+
+  saveToLocalStorage();
+  renderAllViews();
+
+  // Reset form
+  document.getElementById('form-comp-codigo').value = '';
+  document.getElementById('form-comp-nombre').value = '';
+  document.getElementById('form-comp-rap-desc').value = '';
+
+  // Upsert into Supabase
+  if (supabaseClient) {
+    await supabaseClient.from('competencias').upsert({
+      codigo: codigo,
+      nombre: nombre,
+      horas: horas,
+      resultados: existingIdx !== -1 ? APP_STATE.competencias[existingIdx].resultados : [rapObj]
+    }, { onConflict: 'codigo' });
+  }
+
+  alert(`¡Competencia ${codigo} y ${rapCodigo} vinculados exitosamente!`);
+}
+
+function deleteCompetencia(codigo) {
+  if (!confirm(`¿Está seguro de eliminar la competencia ${codigo} y sus RAPs asociados?`)) return;
+  APP_STATE.competencias = APP_STATE.competencias.filter(c => c.codigo !== codigo);
+  saveToLocalStorage();
+  renderAllViews();
+
+  if (supabaseClient) {
+    supabaseClient.from('competencias').delete().eq('codigo', codigo);
+  }
+}
+
+// 5.3 AGREGAR APRENDIZ INDIVIDUAL
+async function handleCreateIndividualLearner(event) {
+  event.preventDefault();
+  const tipoDoc = document.getElementById('form-indiv-tipodoc').value;
+  const doc = document.getElementById('form-indiv-doc').value.trim();
+  const nombres = document.getElementById('form-indiv-nombres').value.trim();
+  const apellidos = document.getElementById('form-indiv-apellidos').value.trim();
+  const email = document.getElementById('form-indiv-email').value.trim();
+
+  if (!doc || !nombres || !email) {
+    alert('Por favor complete todos los campos obligatorios.');
+    return;
+  }
+
+  // Check if exists
+  const existingIdx = APP_STATE.aprendices.findIndex(a => a.documento === doc);
+  const learnerObj = {
+    id: `ap_${Date.now()}`,
+    tipoDoc: tipoDoc,
+    documento: doc,
+    nombres: nombres,
+    apellidos: apellidos,
+    correo: email,
+    usuario: doc,
+    password: doc,
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  };
+
+  if (existingIdx !== -1) {
+    APP_STATE.aprendices[existingIdx] = learnerObj;
+  } else {
+    APP_STATE.aprendices.push(learnerObj);
+  }
+
+  saveToLocalStorage();
+  renderAllViews();
+
+  // Reset Form
+  document.getElementById('form-indiv-doc').value = '';
+  document.getElementById('form-indiv-nombres').value = '';
+  document.getElementById('form-indiv-apellidos').value = '';
+  document.getElementById('form-indiv-email').value = '';
+
+  // Upsert into Supabase
+  if (supabaseClient) {
+    const ficha = getCurrentFicha();
+    await supabaseClient.from('aprendices').upsert({
+      documento: doc,
+      nombres: nombres,
+      apellidos: apellidos,
+      email: email,
+      usuario: doc,
+      password: doc,
+      estado_matricula: 'En Formación',
+      ficha_codigo: ficha.codigo
+    }, { onConflict: 'documento' });
+  }
+
+  alert(`¡Aprendiz ${nombres} ${apellidos} registrado exitosamente!`);
+}
+
+function deleteLearner(documento) {
+  if (!confirm(`¿Está seguro de eliminar al aprendiz con documento ${documento}?`)) return;
+  APP_STATE.aprendices = APP_STATE.aprendices.filter(a => a.documento !== documento);
+  saveToLocalStorage();
+  renderAllViews();
+
+  if (supabaseClient) {
+    supabaseClient.from('aprendices').delete().eq('documento', documento);
+  }
+}
+
+function updateLearnerEstado(documento, nuevoEstado) {
+  const learner = APP_STATE.aprendices.find(a => a.documento === documento);
+  if (learner) {
+    learner.estado = nuevoEstado;
+    saveToLocalStorage();
+    renderCargarInfo();
+
+    if (supabaseClient) {
+      supabaseClient.from('aprendices').update({ estado_matricula: nuevoEstado }).eq('documento', documento);
+    }
+  }
+}
+
+function filterLearnersTable(query) {
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('#tbody-cargar-aprendices tr');
+  rows.forEach(r => {
+    const text = r.innerText.toLowerCase();
+    if (text.includes(q)) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+}
+
+// =========================================================================
+// 6. RENDERING LOGIC FOR ALL VIEWS
 // =========================================================================
 function renderAllViews() {
   renderTopNavigation();
@@ -686,7 +974,82 @@ function renderPanelGeneral() {
 }
 
 function renderCargarInfo() {
-  document.getElementById('badge-cargar-count').textContent = `${APP_STATE.aprendices.length} Aprendices Registrados`;
+  const currentFicha = getCurrentFicha();
+
+  // 1. Render Fichas Cards (Sub-tab 1)
+  const badgeFichas = document.getElementById('badge-total-fichas');
+  if (badgeFichas) badgeFichas.textContent = `${APP_STATE.fichas.length} Fichas`;
+
+  const listFichasCards = document.getElementById('list-fichas-cards');
+  if (listFichasCards) {
+    listFichasCards.innerHTML = APP_STATE.fichas.map(f => {
+      const isActive = f.codigo === currentFicha.codigo;
+      return `
+        <div class="p-4 rounded-xl border transition ${isActive ? 'bg-blue-50/70 border-blue-300 ring-2 ring-[#002B7F]/20' : 'bg-slate-50 border-slate-200'} flex items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-xs ${isActive ? 'bg-[#002B7F] text-white' : 'bg-slate-200 text-slate-800'} px-2.5 py-0.5 rounded">
+                ${f.codigo}
+              </span>
+              <span class="font-bold text-slate-900 text-sm">${f.programa}</span>
+              ${isActive ? '<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full uppercase">Activa</span>' : ''}
+            </div>
+            <div class="text-xs text-slate-600 flex flex-wrap gap-x-4">
+              <span><strong>Jornada:</strong> ${f.jornada}</span>
+              <span><strong>Ambiente:</strong> ${f.ambiente}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            ${!isActive ? `
+              <button onclick="selectFicha('${f.codigo}')" class="px-3 py-1.5 bg-[#002B7F] hover:bg-blue-900 text-white text-xs font-bold rounded-lg shadow-xs transition cursor-pointer">
+                Gestionar
+              </button>
+            ` : ''}
+            <button onclick="deleteFicha('${f.codigo}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Eliminar Ficha">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 2. Render Competencias Cards (Sub-tab 2)
+  const badgeComp = document.getElementById('badge-total-competencias');
+  if (badgeComp) badgeComp.textContent = `${APP_STATE.competencias.length} Competencias`;
+
+  const listCompCards = document.getElementById('list-competencias-cards');
+  if (listCompCards) {
+    listCompCards.innerHTML = APP_STATE.competencias.map(c => `
+      <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-xs bg-indigo-100 text-indigo-900 px-2.5 py-0.5 rounded">
+              ${c.codigo}
+            </span>
+            <span class="font-bold text-slate-900 text-xs">${c.nombre}</span>
+          </div>
+          <button onclick="deleteCompetencia('${c.codigo}')" class="text-slate-400 hover:text-rose-600 p-1" title="Eliminar Competencia">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="space-y-1.5 pt-2 border-t border-slate-200">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Resultados de Aprendizaje (RAPs):</span>
+          ${(c.resultados || []).map(r => `
+            <div class="p-2 bg-white border border-slate-200 rounded-lg text-xs flex items-start gap-2">
+              <span class="font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded text-[10px] shrink-0">${r.codigo}</span>
+              <span class="text-slate-700">${r.descripcion}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 3. Render Aprendices Table (Sub-tab 3)
+  document.getElementById('badge-cargar-count').textContent = `${APP_STATE.aprendices.length} Aprendices`;
   const tbody = document.getElementById('tbody-cargar-aprendices');
   if (!tbody) return;
 
@@ -694,7 +1057,7 @@ function renderCargarInfo() {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="p-8 text-center text-slate-400 font-semibold">
-          No hay aprendices registrados. Carga un archivo Excel o sincroniza con Supabase.
+          No hay aprendices registrados. Carga un archivo Excel o registra uno individualmente.
         </td>
       </tr>
     `;
@@ -702,16 +1065,26 @@ function renderCargarInfo() {
   }
 
   tbody.innerHTML = APP_STATE.aprendices.map((a, i) => `
-    <tr class="hover:bg-slate-50 transition">
+    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
       <td class="p-3 font-mono font-bold text-slate-400">${i + 1}</td>
       <td class="p-3 font-mono font-bold text-slate-900">${a.documento}</td>
-      <td class="p-3 font-bold text-slate-900">${a.nombres} ${a.apellidos}</td>
-      <td class="p-3 text-slate-600">${a.correo}</td>
-      <td class="p-3 font-mono text-slate-500 bg-slate-50">${a.password || a.documento}</td>
       <td class="p-3">
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
-          ${a.estado || 'En Formación'}
-        </span>
+        <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
+        <div class="text-[10px] text-slate-500 font-mono">Clave: ${a.password || a.documento}</div>
+      </td>
+      <td class="p-3 text-slate-600">${a.correo}</td>
+      <td class="p-3">
+        <select onchange="updateLearnerEstado('${a.documento}', this.value)" class="text-[10px] font-bold uppercase rounded-lg border border-slate-300 p-1 bg-white">
+          <option value="En Formación" ${a.estado === 'En Formación' ? 'selected' : ''}>En Formación</option>
+          <option value="Condicionado" ${a.estado === 'Condicionado' ? 'selected' : ''}>Condicionado</option>
+          <option value="Cancelado" ${a.estado === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+          <option value="Retiro Voluntario" ${a.estado === 'Retiro Voluntario' ? 'selected' : ''}>Retiro Voluntario</option>
+        </select>
+      </td>
+      <td class="p-3 text-center">
+        <button onclick="deleteLearner('${a.documento}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Eliminar Aprendiz">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
       </td>
     </tr>
   `).join('');
@@ -731,7 +1104,7 @@ function renderAttendanceTable() {
   tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
     const estado = dayRecord[a.documento] || 'presente';
     return `
-      <tr class="hover:bg-slate-50 transition">
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
         <td class="p-3">
           <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
@@ -779,12 +1152,14 @@ function saveAttendanceRecord() {
 
 function renderCalificacionesTable() {
   const selectRap = document.getElementById('select-calificaciones-rap');
-  if (selectRap && selectRap.children.length === 0) {
+  if (selectRap) {
     const raps = [];
     APP_STATE.competencias.forEach(c => {
-      (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion}` }));
+      (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion.substring(0, 50)}...` }));
     });
-    selectRap.innerHTML = raps.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
+    if (raps.length > 0) {
+      selectRap.innerHTML = raps.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
+    }
   }
 
   const selectedRap = selectRap ? selectRap.value || 'RAP1' : 'RAP1';
@@ -795,7 +1170,7 @@ function renderCalificacionesTable() {
     const key = `${a.documento}_${selectedRap}`;
     const cal = APP_STATE.calificaciones[key] || { estado: 'aprobado', feedback: '' };
     return `
-      <tr class="hover:bg-slate-50 transition">
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
         <td class="p-3 font-bold text-slate-900">${a.nombres} ${a.apellidos}</td>
         <td class="p-3 font-mono text-slate-700">${a.documento}</td>
@@ -854,7 +1229,7 @@ function renderConsultaAsistenciaTable() {
     const hasRisk = fi >= 3;
 
     return `
-      <tr class="hover:bg-slate-50 transition ${hasRisk ? 'bg-rose-50/50' : ''}">
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${hasRisk ? 'bg-rose-50/50' : ''}">
         <td class="p-3">
           <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
           <div class="text-[10px] text-slate-500 font-mono">Doc: ${a.documento}</div>
@@ -1044,7 +1419,7 @@ function changeLearnerPortalView(doc) {
 }
 
 // =========================================================================
-// 6. PHOTO STORAGE UPLOADS (SUPABASE BUCKET 'perfiles')
+// 7. PHOTO STORAGE UPLOADS (SUPABASE BUCKET 'perfiles')
 // =========================================================================
 async function handleLearnerPhotoUpload(e) {
   const file = e.target.files[0];
@@ -1140,7 +1515,7 @@ async function saveInstructorProfileData() {
 }
 
 // =========================================================================
-// 7. EXCEL IMPORT / EXPORT (SHEETJS)
+// 8. EXCEL IMPORT / EXPORT (SHEETJS)
 // =========================================================================
 function handleExcelFileUpload(event) {
   const file = event.target.files[0];
@@ -1163,6 +1538,7 @@ function handleExcelFileUpload(event) {
 
           return {
             id: `ap_${Date.now()}_${idx}`,
+            tipoDoc: 'CC',
             documento: doc,
             nombres: nombres,
             apellidos: apellidos,
@@ -1182,7 +1558,7 @@ function handleExcelFileUpload(event) {
         
         // Auto-save to Supabase
         await syncDataToSupabase();
-        alert(`¡Carga completada! Se registraron ${parsedAprendices.length} aprendices en el sistema.`);
+        alert(`¡Carga masiva completada! Se registraron ${parsedAprendices.length} aprendices en el sistema.`);
       }
     } catch (err) {
       alert(`Error al leer archivo Excel: ${err.message}`);
@@ -1239,7 +1615,7 @@ function exportNotasToExcel() {
 }
 
 // =========================================================================
-// 8. DISCIPLINARY ACTS (LLAMADOS DE ATENCION)
+// 9. DISCIPLINARY ACTS (LLAMADOS DE ATENCION)
 // =========================================================================
 function prefillAndOpenLlamado(doc, tipo, motivo) {
   const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
@@ -1323,18 +1699,10 @@ function copySqlScript() {
 }
 
 // =========================================================================
-// 9. INITIALIZATION AT DOM CONTENT LOADED
+// 10. INITIALIZATION AT DOM CONTENT LOADED
 // =========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   loadFromLocalStorage();
-
-  // Populate nuevo llamado learners
-  const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
-  if (selLearner) {
-    selLearner.innerHTML = APP_STATE.aprendices.map(a => `
-      <option value="${a.documento}">${a.nombres} ${a.apellidos} (${a.documento})</option>
-    `).join('');
-  }
 
   // Check login state: Default is login screen
   const isLogged = localStorage.getItem('academix_logged_in') === 'true';
