@@ -92,276 +92,11 @@ const DEFAULT_ACTIVITIES = [
   },
 ];
 
-// Initial Apprentice Seed
-const SEED_APRENDICES = [
-  // Ficha 2694110 (ADSO Tarde)
-  {
-    id: 'ap_1',
-    fichaCodigo: '2694110',
-    tipoDoc: 'CC',
-    documento: '1001234567',
-    nombres: 'Carlos Andrés',
-    apellidos: 'Pérez Gómez',
-    correo: 'carlos.perez@misena.edu.co',
-    usuario: '1001234567',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 100,
-    fallasConsecutivas: 0
-  },
-  {
-    id: 'ap_2',
-    fichaCodigo: '2694110',
-    tipoDoc: 'TI',
-    documento: '1002345678',
-    nombres: 'Ana María',
-    apellidos: 'Gómez Restrepo',
-    correo: 'ana.gomez@misena.edu.co',
-    usuario: '1002345678',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 95,
-    fallasConsecutivas: 1
-  },
-  {
-    id: 'ap_3',
-    fichaCodigo: '2694110',
-    tipoDoc: 'CC',
-    documento: '1003456789',
-    nombres: 'Juan David',
-    apellidos: 'López Morales',
-    correo: 'juan.lopez@misena.edu.co',
-    usuario: '1003456789',
-    password: 'password123',
-    estado: 'Condicionado',
-    foto: '',
-    rachaAsistencia: 70,
-    fallasConsecutivas: 3
-  },
-  {
-    id: 'ap_4',
-    fichaCodigo: '2694110',
-    tipoDoc: 'CC',
-    documento: '1004567890',
-    nombres: 'Luisa Fernanda',
-    apellidos: 'Martínez Arias',
-    correo: 'luisa.martinez@misena.edu.co',
-    usuario: '1004567890',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 100,
-    fallasConsecutivas: 0
-  },
-  {
-    id: 'ap_5',
-    fichaCodigo: '2694110',
-    tipoDoc: 'CC',
-    documento: '1005678901',
-    nombres: 'Santiago',
-    apellidos: 'Ramírez Castro',
-    correo: 'santiago.ramirez@misena.edu.co',
-    usuario: '1005678901',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 88,
-    fallasConsecutivas: 0
-  },
-  // Ficha 2718902 (ADSO Mañana)
-  {
-    id: 'ap_6',
-    fichaCodigo: '2718902',
-    tipoDoc: 'CC',
-    documento: '1094837261',
-    nombres: 'Laura Marcela',
-    apellidos: 'Castaño Duque',
-    correo: 'laura.castano@misena.edu.co',
-    usuario: '1094837261',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 100,
-    fallasConsecutivas: 0
-  },
-  {
-    id: 'ap_7',
-    fichaCodigo: '2718902',
-    tipoDoc: 'CC',
-    documento: '1088321984',
-    nombres: 'Mateo Alejandro',
-    apellidos: 'Morales Ríos',
-    correo: 'mateo.morales@misena.edu.co',
-    usuario: '1088321984',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 92,
-    fallasConsecutivas: 1
-  },
-  {
-    id: 'ap_8',
-    fichaCodigo: '2718902',
-    tipoDoc: 'TI',
-    documento: '1077432891',
-    nombres: 'Valentina',
-    apellidos: 'Osorio Betancur',
-    correo: 'valentina.osorio@misena.edu.co',
-    usuario: '1077432891',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 100,
-    fallasConsecutivas: 0
-  },
-  // Ficha 2540193 (Animación 3D)
-  {
-    id: 'ap_9',
-    fichaCodigo: '2540193',
-    tipoDoc: 'CC',
-    documento: '1066543210',
-    nombres: 'Daniel Esteban',
-    apellidos: 'Torres Salazar',
-    correo: 'daniel.torres@misena.edu.co',
-    usuario: '1066543210',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 100,
-    fallasConsecutivas: 0
-  },
-  {
-    id: 'ap_10',
-    fichaCodigo: '2540193',
-    tipoDoc: 'CC',
-    documento: '1055432109',
-    nombres: 'Natalia Andrea',
-    apellidos: 'Ruiz Cardona',
-    correo: 'natalia.ruiz@misena.edu.co',
-    usuario: '1055432109',
-    password: 'password123',
-    estado: 'En Formación',
-    foto: '',
-    rachaAsistencia: 90,
-    fallasConsecutivas: 0
-  }
-];
-
-// Seed Historical Attendance
-const SEED_ASISTENCIAS = {
-  '2026-09-14': {
-    '1001234567': 'presente',
-    '1002345678': 'presente',
-    '1003456789': 'injustificada',
-    '1004567890': 'presente',
-    '1005678901': 'presente',
-    '1094837261': 'presente',
-    '1088321984': 'presente',
-    '1077432891': 'presente'
-  },
-  '2026-09-15': {
-    '1001234567': 'presente',
-    '1002345678': 'retardo',
-    '1003456789': 'injustificada',
-    '1004567890': 'presente',
-    '1005678901': 'presente',
-    '1094837261': 'presente',
-    '1088321984': 'retardo',
-    '1077432891': 'presente'
-  },
-  '2026-09-16': {
-    '1001234567': 'presente',
-    '1002345678': 'presente',
-    '1003456789': 'injustificada',
-    '1004567890': 'presente',
-    '1005678901': 'justificada',
-    '1094837261': 'presente',
-    '1088321984': 'presente',
-    '1077432891': 'presente'
-  },
-  '2026-09-17': {
-    '1001234567': 'presente',
-    '1002345678': 'presente',
-    '1003456789': 'presente',
-    '1004567890': 'presente',
-    '1005678901': 'presente',
-    '1094837261': 'presente',
-    '1088321984': 'presente',
-    '1077432891': 'presente'
-  },
-  '2026-09-18': {
-    '1001234567': 'presente',
-    '1002345678': 'presente',
-    '1003456789': 'retardo',
-    '1004567890': 'presente',
-    '1005678901': 'presente',
-    '1094837261': 'presente',
-    '1088321984': 'presente',
-    '1077432891': 'presente'
-  }
-};
-
-// Seed Grades (A, NA, or en_blanco)
-const SEED_CALIFICACIONES = {
-  // Ficha 2694110
-  '1001234567_RAP1': { estado: 'aprobado', feedback: 'Excelente diseño del modelo relacional.' },
-  '1001234567_RAP2': { estado: 'aprobado', feedback: 'Consultas SQL bien optimizadas.' },
-  '1001234567_RAP3': { estado: 'aprobado', feedback: 'Maquetación responsive completa.' },
-  '1001234567_RAP4': { estado: 'aprobado', feedback: 'Integración API exitosa.' },
-  
-  '1002345678_RAP1': { estado: 'aprobado', feedback: 'Cumple con los requisitos.' },
-  '1002345678_RAP2': { estado: 'aprobado', feedback: 'Buen manejo de llaves foráneas.' },
-  '1002345678_RAP3': { estado: 'no_aprobado', feedback: 'Debe corregir accesibilidad en contraste.', planRecuperacion: 'Entrega de rúbrica corregida antes del viernes.' },
-  '1002345678_RAP4': { estado: 'en_blanco', feedback: '' },
-  
-  '1003456789_RAP1': { estado: 'no_aprobado', feedback: 'Evidencia incompleta sin normalización.', planRecuperacion: 'Presentar sustento técnico del diagrama MER.' },
-  '1003456789_RAP2': { estado: 'en_blanco', feedback: '' },
-  '1003456789_RAP3': { estado: 'en_blanco', feedback: '' },
-  '1003456789_RAP4': { estado: 'en_blanco', feedback: '' },
-
-  '1004567890_RAP1': { estado: 'aprobado', feedback: 'Muy buen trabajo.' },
-  '1004567890_RAP2': { estado: 'aprobado', feedback: 'Cumple 100%.' },
-  '1004567890_RAP3': { estado: 'aprobado', feedback: 'Diseño limpio en Tailwind.' },
-  '1004567890_RAP4': { estado: 'aprobado', feedback: 'Consumo asíncrono optimizado.' },
-
-  '1005678901_RAP1': { estado: 'aprobado', feedback: 'Aprobado satisfactoriamente.' },
-  '1005678901_RAP2': { estado: 'en_blanco', feedback: '' },
-  '1005678901_RAP3': { estado: 'aprobado', feedback: 'Aprobado.' },
-  '1005678901_RAP4': { estado: 'en_blanco', feedback: '' },
-
-  // Ficha 2718902
-  '1094837261_RAP1': { estado: 'aprobado', feedback: 'Excelente estructura relacional.' },
-  '1094837261_RAP2': { estado: 'aprobado', feedback: 'Modelado DDL impecable.' },
-  '1094837261_RAP3': { estado: 'aprobado', feedback: 'Maquetación UI interactiva.' },
-  '1094837261_RAP4': { estado: 'aprobado', feedback: 'Consumo de REST API completado.' },
-
-  '1088321984_RAP1': { estado: 'aprobado', feedback: 'Cumple con los requisitos mínimos.' },
-  '1088321984_RAP2': { estado: 'en_blanco', feedback: '' },
-  '1088321984_RAP3': { estado: 'no_aprobado', feedback: 'Inconsistencias en tipografía y colores.', planRecuperacion: 'Reentregar prototipo corregido.' },
-  '1088321984_RAP4': { estado: 'en_blanco', feedback: '' },
-
-  '1077432891_RAP1': { estado: 'aprobado', feedback: 'Buen desempeño general.' },
-  '1077432891_RAP2': { estado: 'aprobado', feedback: 'Aprobado.' },
-  '1077432891_RAP3': { estado: 'en_blanco', feedback: '' },
-  '1077432891_RAP4': { estado: 'en_blanco', feedback: '' }
-};
-
-// Seed Disciplinary Notices
-const SEED_LLAMADOS = [
-  {
-    id: 'llamado_1',
-    numeroActa: 'ACTA-2026-001',
-    aprendizDocumento: '1003456789',
-    aprendizNombre: 'Juan David López Morales',
-    tipo: 'inasistencia',
-    fecha: '2026-09-16',
-    motivo: 'Acumulación de tres (3) inasistencias injustificadas continuas en las jornadas formativas del 14, 15 y 16 de Septiembre.',
-    compromiso: 'El aprendiz se compromete a no reincidir en inasistencias, presentar las evidencias académicas atrasadas y cumplir con el Reglamento del Aprendiz SENA.',
-    estado: 'pendiente'
-  }
-];
+// Initial Seeds (Cleaned to rely strictly on real Supabase database)
+const SEED_APRENDICES = [];
+const SEED_ASISTENCIAS = {};
+const SEED_CALIFICACIONES = {};
+const SEED_LLAMADOS = [];
 
 // Global Application State
 const APP_STATE = {
@@ -403,12 +138,12 @@ const APP_STATE = {
   currentFichaCodigo: '2694110',
   
   // Core Records
-  aprendices: SEED_APRENDICES,
+  aprendices: [],
   competencias: SEED_COMPETENCIAS,
   activities: DEFAULT_ACTIVITIES,
-  asistencias: SEED_ASISTENCIAS,
-  calificaciones: SEED_CALIFICACIONES,
-  llamados: SEED_LLAMADOS,
+  asistencias: {},
+  calificaciones: {},
+  llamados: [],
   
   // Instructor Profile
   instructorProfile: {
@@ -433,85 +168,200 @@ async function fetchRealDataFromSupabase() {
     console.log('🔄 Conectando con Supabase para obtener información real...');
     
     // 1. Fetch Instructor Profile
-    const { data: instData, error: instErr } = await supabaseClient
-      .from('instructores')
-      .select('*')
-      .limit(1);
+    try {
+      const { data: instData, error: instErr } = await supabaseClient
+        .from('instructores')
+        .select('*')
+        .limit(1);
 
-    if (!instErr && instData && instData.length > 0) {
-      const dbInst = instData[0];
-      APP_STATE.instructorProfile = {
-        nombres: dbInst.nombres || APP_STATE.instructorProfile.nombres,
-        apellidos: dbInst.apellidos || APP_STATE.instructorProfile.apellidos,
-        documento: dbInst.documento || APP_STATE.instructorProfile.documento,
-        email: dbInst.email || APP_STATE.instructorProfile.email,
-        cargo: dbInst.cargo || APP_STATE.instructorProfile.cargo,
-        centroFormacion: dbInst.centro_formacion || APP_STATE.instructorProfile.centroFormacion,
-        foto: dbInst.foto || APP_STATE.instructorProfile.foto,
-        firmaDigital: dbInst.firma_digital || `${dbInst.nombres} ${dbInst.apellidos}`
-      };
-      APP_STATE.currentUserNombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+      if (!instErr && instData && instData.length > 0) {
+        const dbInst = instData[0];
+        APP_STATE.instructorProfile = {
+          nombres: dbInst.nombres || APP_STATE.instructorProfile.nombres,
+          apellidos: dbInst.apellidos || APP_STATE.instructorProfile.apellidos,
+          documento: dbInst.documento || APP_STATE.instructorProfile.documento,
+          email: dbInst.email || APP_STATE.instructorProfile.email,
+          cargo: dbInst.cargo || APP_STATE.instructorProfile.cargo,
+          centroFormacion: dbInst.centro_formacion || APP_STATE.instructorProfile.centroFormacion,
+          foto: dbInst.foto || APP_STATE.instructorProfile.foto,
+          firmaDigital: dbInst.firma_digital || `${dbInst.nombres} ${dbInst.apellidos}`
+        };
+        APP_STATE.currentUserNombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+      }
+    } catch (e) {
+      console.warn('Error al cargar instructores:', e);
     }
 
     // 2. Fetch Fichas
-    const { data: fichasData, error: fichasErr } = await supabaseClient
-      .from('fichas')
-      .select('*');
+    const fichaIdToCodeMap = {};
+    try {
+      const { data: fichasData, error: fichasErr } = await supabaseClient
+        .from('fichas')
+        .select('*');
 
-    if (!fichasErr && fichasData && fichasData.length > 0) {
-      APP_STATE.fichas = fichasData.map(f => ({
-        codigo: f.codigo,
-        programa: f.programa || 'Tecnólogo en ADSO',
-        jornada: f.jornada || 'Jornada Tarde',
-        ambiente: f.ambiente || 'Ambiente de Formación',
-        instructorLider: APP_STATE.currentUserNombre,
-        centroFormacion: APP_STATE.instructorProfile.centroFormacion,
-        regional: 'Regional Antioquia'
-      }));
+      if (!fichasErr && fichasData && fichasData.length > 0) {
+        APP_STATE.fichas = fichasData.map(f => {
+          const c = String(f.codigo || '').trim();
+          if (f.id && c) {
+            fichaIdToCodeMap[f.id] = c;
+          }
+          return {
+            id: f.id,
+            codigo: c,
+            programa: f.programa || 'Tecnólogo en ADSO',
+            jornada: f.jornada || 'Jornada Tarde',
+            ambiente: f.ambiente || 'Ambiente de Formación',
+            instructorLider: APP_STATE.currentUserNombre,
+            centroFormacion: APP_STATE.instructorProfile.centroFormacion,
+            regional: 'Regional Antioquia'
+          };
+        });
+
+        // Ensure active ficha is valid
+        if (!APP_STATE.fichas.some(f => f.codigo === APP_STATE.currentFichaCodigo)) {
+          APP_STATE.currentFichaCodigo = APP_STATE.fichas[0].codigo;
+        }
+      }
+    } catch (e) {
+      console.warn('Error al cargar fichas:', e);
     }
 
-    // 3. Fetch Aprendices
-    const { data: apData, error: apErr } = await supabaseClient
-      .from('aprendices')
-      .select('*');
+    // 3. Fetch Real Aprendices with correct ficha_codigo mapping
+    try {
+      const { data: apData, error: apErr } = await supabaseClient
+        .from('aprendices')
+        .select('*');
 
-    if (!apErr && apData && apData.length > 0) {
-      APP_STATE.aprendices = apData.map(a => ({
-        id: a.id || a.documento,
-        tipoDoc: a.tipo_documento || 'CC',
-        documento: a.documento,
-        nombres: a.nombres,
-        apellidos: a.apellidos || '',
-        correo: a.email || a.correo || `${a.documento}@misena.edu.co`,
-        usuario: a.usuario || a.documento,
-        password: a.password || a.contrasena || a.documento,
-        estado: a.estado_matricula || a.estado || 'En Formación',
-        foto: a.foto || '',
-        rachaAsistencia: Number(a.racha_asistencia || 100),
-        fallasConsecutivas: Number(a.fallas_consecutivas || 0)
-      }));
+      if (!apErr && apData) {
+        APP_STATE.aprendices = apData.map(a => {
+          const directCode = a.ficha_codigo ? String(a.ficha_codigo).trim() : '';
+          const mappedCode = a.ficha_id && fichaIdToCodeMap[a.ficha_id] ? fichaIdToCodeMap[a.ficha_id] : '';
+          const finalFicha = directCode || mappedCode || '';
+
+          return {
+            id: String(a.id || a.documento),
+            tipoDoc: a.tipo_doc || a.tipo_documento || 'CC',
+            documento: String(a.documento || '').trim(),
+            nombres: a.nombres || '',
+            apellidos: a.apellidos || '',
+            correo: a.email || a.correo || `${a.documento}@misena.edu.co`,
+            usuario: String(a.usuario || a.documento || ''),
+            password: String(a.password || a.contrasena || a.documento || ''),
+            estado: a.estado_matricula || a.estado || 'En Formación',
+            foto: a.foto || '',
+            rachaAsistencia: Number(a.racha_asistencia || 100),
+            fallasConsecutivas: Number(a.fallas_consecutivas || 0),
+            fichaCodigo: finalFicha
+          };
+        });
+      }
+    } catch (e) {
+      console.warn('Error al cargar aprendices:', e);
     }
 
-    // 4. Fetch Competencias
-    const { data: compData } = await supabaseClient.from('competencias').select('*');
-    if (compData && compData.length > 0) {
-      APP_STATE.competencias = compData;
+    // 4. Fetch Real Asistencias from Supabase
+    try {
+      const { data: asisData, error: asisErr } = await supabaseClient
+        .from('asistencias')
+        .select('*');
+
+      const realAsistencias = {};
+      if (!asisErr && asisData && asisData.length > 0) {
+        asisData.forEach(row => {
+          const d = row.fecha;
+          if (!d) return;
+          if (!realAsistencias[d]) realAsistencias[d] = {};
+          let st = row.estado || 'presente';
+          if (st === 'falta') st = 'injustificada';
+          else if (st === 'retraso') st = 'retardo';
+          else if (st === 'excusa') st = 'justificada';
+          realAsistencias[d][String(row.aprendiz_documento).trim()] = st;
+        });
+      }
+      APP_STATE.asistencias = realAsistencias;
+    } catch (e) {
+      console.warn('Error al cargar asistencias:', e);
     }
 
-    // 5. Fetch Llamados de atención
-    const { data: llamData } = await supabaseClient.from('llamados_atencion').select('*');
-    if (llamData && llamData.length > 0) {
-      APP_STATE.llamados = llamData.map(l => ({
-        id: l.id,
-        numeroActa: l.numero_acta || `ACTA-${new Date().getFullYear()}-001`,
-        aprendizDocumento: l.aprendiz_documento,
-        aprendizNombre: l.aprendiz_nombre,
-        tipo: l.tipo,
-        fecha: l.fecha,
-        motivo: l.motivo,
-        compromiso: l.compromiso,
-        estado: l.estado || 'pendiente'
-      }));
+    // 5. Fetch Real Calificaciones from Supabase
+    try {
+      const { data: calData, error: calErr } = await supabaseClient
+        .from('calificaciones')
+        .select('*');
+
+      const realCalifs = {};
+      if (!calErr && calData && calData.length > 0) {
+        calData.forEach(cr => {
+          const doc = String(cr.aprendiz_documento).trim();
+          const rapCode = cr.rap_codigo ? (cr.rap_codigo.startsWith('RAP') ? cr.rap_codigo.replace('-', '') : cr.rap_codigo) : 'RAP1';
+          const key = `${doc}_${rapCode}`;
+          let estado = 'en_blanco';
+          if (cr.calificacion === 'A' || cr.calificacion === 'aprobado') estado = 'aprobado';
+          else if (cr.calificacion === 'NA' || cr.calificacion === 'no_aprobado') estado = 'no_aprobado';
+          
+          realCalifs[key] = {
+            estado: estado,
+            feedback: cr.observacion || '',
+            planRecuperacion: cr.plan_actividad || ''
+          };
+        });
+      }
+      APP_STATE.calificaciones = realCalifs;
+    } catch (e) {
+      console.warn('Error al cargar calificaciones:', e);
+    }
+
+    // 6. Fetch Competencias & RAPs
+    try {
+      const { data: compData } = await supabaseClient.from('competencias').select('*');
+      const { data: rapData } = await supabaseClient.from('resultados_aprendizaje').select('*');
+      
+      if (compData && compData.length > 0) {
+        APP_STATE.competencias = compData.map(c => {
+          const compRaps = (rapData || [])
+            .filter(r => r.competencia_id === c.id || r.competencia_codigo === c.codigo)
+            .map(r => ({
+              id: r.codigo_rap ? r.codigo_rap.replace('-', '') : (r.id || 'RAP1'),
+              codigo: r.codigo_rap || 'RAP-01',
+              descripcion: r.nombre_rap || r.descripcion || c.nombre
+            }));
+
+          return {
+            id: c.id,
+            codigo: c.codigo,
+            nombre: c.nombre,
+            horas: Number(c.horas) || 160,
+            estado: c.estado || 'Activo',
+            resultados: compRaps.length > 0 ? compRaps : (c.resultados || [
+              { id: 'RAP1', codigo: 'RAP-01', descripcion: c.nombre }
+            ])
+          };
+        });
+      }
+    } catch (e) {
+      console.warn('Error al cargar competencias:', e);
+    }
+
+    // 7. Fetch Llamados de atención
+    try {
+      const { data: llamData } = await supabaseClient.from('llamados_atencion').select('*');
+      if (llamData && llamData.length > 0) {
+        APP_STATE.llamados = llamData.map(l => ({
+          id: String(l.id || l.numero_acta),
+          numeroActa: l.numero_acta || `ACTA-${new Date().getFullYear()}-001`,
+          aprendizDocumento: l.aprendiz_documento,
+          aprendizNombre: l.aprendiz_nombre,
+          tipo: l.tipo || 'inasistencia',
+          fecha: l.fecha || l.fecha_emision || '',
+          motivo: l.motivo || l.causa_detectada || '',
+          compromiso: l.compromiso || '',
+          estado: l.estado || 'pendiente'
+        }));
+      } else {
+        APP_STATE.llamados = [];
+      }
+    } catch (e) {
+      console.warn('Error al cargar llamados:', e);
     }
 
     saveToLocalStorage();
@@ -649,14 +499,14 @@ function loadFromLocalStorage() {
     const saved = localStorage.getItem('academix_html_state');
     if (saved) {
       const parsed = JSON.parse(saved);
-      APP_STATE.fichas = parsed.fichas || APP_STATE.fichas;
+      APP_STATE.fichas = (parsed.fichas && parsed.fichas.length) ? parsed.fichas : APP_STATE.fichas;
       APP_STATE.currentFichaCodigo = parsed.currentFichaCodigo || APP_STATE.currentFichaCodigo;
-      APP_STATE.aprendices = (parsed.aprendices && parsed.aprendices.length) ? parsed.aprendices : SEED_APRENDICES;
+      APP_STATE.aprendices = Array.isArray(parsed.aprendices) ? parsed.aprendices : [];
       APP_STATE.competencias = (parsed.competencias && parsed.competencias.length) ? parsed.competencias : SEED_COMPETENCIAS;
       APP_STATE.activities = (parsed.activities && parsed.activities.length) ? parsed.activities : DEFAULT_ACTIVITIES;
-      APP_STATE.asistencias = parsed.asistencias || SEED_ASISTENCIAS;
-      APP_STATE.calificaciones = parsed.calificaciones || SEED_CALIFICACIONES;
-      APP_STATE.llamados = (parsed.llamados && parsed.llamados.length) ? parsed.llamados : SEED_LLAMADOS;
+      APP_STATE.asistencias = (parsed.asistencias && typeof parsed.asistencias === 'object') ? parsed.asistencias : {};
+      APP_STATE.calificaciones = (parsed.calificaciones && typeof parsed.calificaciones === 'object') ? parsed.calificaciones : {};
+      APP_STATE.llamados = Array.isArray(parsed.llamados) ? parsed.llamados : [];
       APP_STATE.instructorProfile = parsed.instructorProfile || APP_STATE.instructorProfile;
       APP_STATE.currentUserRole = parsed.currentUserRole || 'instructor';
       APP_STATE.currentUserDoc = parsed.currentUserDoc || '8787499';
@@ -875,16 +725,22 @@ function getCurrentFicha() {
 }
 
 function getAprendicesForFicha(fichaCodigo) {
-  const targetCodigo = fichaCodigo || APP_STATE.currentFichaCodigo;
-  return APP_STATE.aprendices.filter(a => {
-    if (!a.fichaCodigo) return targetCodigo === '2694110';
-    return a.fichaCodigo === targetCodigo;
+  const current = getCurrentFicha();
+  const targetCodigo = String(fichaCodigo || (current ? current.codigo : APP_STATE.currentFichaCodigo) || '').trim();
+  if (!targetCodigo) return [];
+  return (APP_STATE.aprendices || []).filter(a => {
+    const aFicha = String(a.fichaCodigo || a.ficha_codigo || '').trim();
+    return aFicha === targetCodigo;
   });
 }
 
 function getCompetenciasForFicha(fichaCodigo) {
-  const targetCodigo = fichaCodigo || APP_STATE.currentFichaCodigo;
-  return APP_STATE.competencias.filter(c => !c.fichaCodigo || c.fichaCodigo === targetCodigo);
+  const current = getCurrentFicha();
+  const targetCodigo = String(fichaCodigo || (current ? current.codigo : APP_STATE.currentFichaCodigo) || '').trim();
+  return (APP_STATE.competencias || []).filter(c => {
+    const cFicha = String(c.fichaCodigo || c.ficha_codigo || '').trim();
+    return !cFicha || cFicha === targetCodigo;
+  });
 }
 
 function toggleFichaDropdown() {
@@ -1444,7 +1300,7 @@ function renderAttendanceTable() {
 
   let countP = 0, countFI = 0, countFJ = 0, countR = 0, countE = 0;
   fichaAprendices.forEach(a => {
-    const st = dayRecord[a.documento] || 'presente';
+    const st = dayRecord[a.documento];
     if (st === 'presente') countP++;
     else if (st === 'injustificada') countFI++;
     else if (st === 'justificada') countFJ++;
@@ -1478,12 +1334,12 @@ function renderAttendanceTable() {
   }
 
   tbody.innerHTML = fichaAprendices.map((a, i) => {
-    const estado = dayRecord[a.documento] || 'presente';
+    const estado = dayRecord[a.documento] || '';
 
     // Calculate historical unjustified absences for risk badge
     let fiCount = 0;
     Object.keys(APP_STATE.asistencias).forEach(d => {
-      if (APP_STATE.asistencias[d][a.documento] === 'injustificada') fiCount++;
+      if (APP_STATE.asistencias[d] && APP_STATE.asistencias[d][a.documento] === 'injustificada') fiCount++;
     });
 
     return `
@@ -1542,8 +1398,38 @@ function markAllAttendance(estado) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function saveAttendanceRecord() {
+async function saveAttendanceRecord() {
   saveToLocalStorage();
+  const curDate = document.getElementById('input-asistencia-date').value;
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  
+  if (supabaseClient && APP_STATE.asistencias[curDate]) {
+    try {
+      const recordsToUpsert = fichaAprendices
+        .filter(a => APP_STATE.asistencias[curDate][a.documento])
+        .map(a => {
+          let dbEstado = APP_STATE.asistencias[curDate][a.documento];
+          if (dbEstado === 'injustificada') dbEstado = 'falta';
+          else if (dbEstado === 'retardo') dbEstado = 'retraso';
+          else if (dbEstado === 'justificada') dbEstado = 'excusa';
+          
+          return {
+            aprendiz_documento: a.documento,
+            ficha_codigo: ficha.codigo,
+            fecha: curDate,
+            estado: dbEstado
+          };
+        });
+
+      if (recordsToUpsert.length > 0) {
+        await supabaseClient.from('asistencias').upsert(recordsToUpsert, { onConflict: 'aprendiz_documento,fecha' });
+      }
+    } catch (e) {
+      console.warn('Supabase attendance save notice:', e);
+    }
+  }
+
   alert('¡Asistencia registrada y guardada exitosamente en el sistema!');
 }
 
@@ -1666,8 +1552,38 @@ function setCalificacionPlan(doc, rapId, plan) {
   saveToLocalStorage();
 }
 
-function saveCalificacionesRecord() {
+async function saveCalificacionesRecord() {
   saveToLocalStorage();
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const selectRap = document.getElementById('select-calificaciones-rap');
+  const selectedRap = selectRap && selectRap.value ? selectRap.value : 'RAP1';
+
+  if (supabaseClient) {
+    try {
+      const recordsToUpsert = [];
+      fichaAprendices.forEach(a => {
+        const key = `${a.documento}_${selectedRap}`;
+        const cal = APP_STATE.calificaciones[key];
+        if (cal && cal.estado && cal.estado !== 'en_blanco') {
+          recordsToUpsert.push({
+            aprendiz_documento: a.documento,
+            rap_codigo: selectedRap,
+            calificacion: cal.estado === 'aprobado' ? 'A' : 'NA',
+            observacion: cal.feedback || '',
+            plan_actividad: cal.planRecuperacion || ''
+          });
+        }
+      });
+
+      if (recordsToUpsert.length > 0) {
+        await supabaseClient.from('calificaciones').upsert(recordsToUpsert, { onConflict: 'aprendiz_documento,rap_codigo' });
+      }
+    } catch (e) {
+      console.warn('Supabase calificaciones save notice:', e);
+    }
+  }
+
   alert('¡Juicios evaluativos guardados correctamente!');
 }
 
