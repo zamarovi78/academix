@@ -933,7 +933,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 class="text-xl font-bold text-slate-900">Toma Diaria de Asistencia</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Control de puntualidad, faltas justificadas e injustificadas</p>
+              <p class="text-xs text-slate-500 mt-0.5">Control de puntualidad, faltas justificadas e injustificadas y novedades de formación</p>
             </div>
             
             <div class="flex items-center gap-3 flex-wrap">
@@ -942,13 +942,30 @@
                 <input type="date" id="input-asistencia-date" class="text-xs font-semibold text-slate-800 bg-transparent outline-none cursor-pointer" onchange="renderAttendanceTable()">
               </div>
 
-              <button onclick="markAllAttendance('presente')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">
-                Marcar Todos Presentes (P)
+              <button onclick="markAllAttendance('presente')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                <span>Marcar Todos Presentes (P)</span>
               </button>
 
-              <button onclick="saveAttendanceRecord()" class="px-4 py-2 rounded-xl bg-[#002B7F] hover:bg-blue-900 text-white text-xs font-bold shadow-xs transition cursor-pointer">
-                Guardar Asistencia
+              <button onclick="saveAttendanceRecord()" class="px-4 py-2 rounded-xl bg-[#002B7F] hover:bg-blue-900 text-white text-xs font-bold shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Guardar Asistencia</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Attendance Status Legend & Summary Bar -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-wrap items-center justify-between gap-4 text-xs">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Convenciones:</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">P = Presente</span>
+              <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold">FI = Falta Injustificada</span>
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">FJ = Falta Justificada</span>
+              <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-bold">R = Retardo</span>
+              <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">E = Excusado</span>
+            </div>
+            <div id="asistencia-day-stats" class="text-xs font-semibold text-slate-600">
+              <!-- Rendered via JS -->
             </div>
           </div>
 
@@ -963,6 +980,7 @@
                     <th class="p-3">Documento</th>
                     <th class="p-3 text-center">Estado Asistencia</th>
                     <th class="p-3">Observaciones / Novedad</th>
+                    <th class="p-3 text-center">Alerta Faltas</th>
                   </tr>
                 </thead>
                 <tbody id="tbody-asistencia-list" class="divide-y divide-slate-100">
@@ -974,28 +992,46 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- VIEW 4: REGISTRO DE CALIFICACIONES (JUICIOS RAPs)                         -->
+        <!-- VIEW 4: REGISTRO DE CALIFICACIONES (JUICIOS RAPs & ACTIVIDADES)           -->
         <!-- ========================================================================= -->
         <section id="view-calificaciones" class="view-panel hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-xl font-bold text-slate-900">Evaluación de Resultados de Aprendizaje</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Asignación de juicios evaluativos cualitativos (Aprobado / No Aprobado)</p>
+              <h2 class="text-xl font-bold text-slate-900">Evaluación y Juicios Evaluativos</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Asignación de juicios cualitativos SENA (Aprobado, No Aprobado o En Blanco) con planes de mejoramiento</p>
             </div>
 
-            <button onclick="saveCalificacionesRecord()" class="px-4 py-2 rounded-xl bg-[#002B7F] hover:bg-blue-900 text-white text-xs font-bold shadow-xs transition cursor-pointer">
-              Guardar Juicios Evaluativos
+            <button onclick="saveCalificacionesRecord()" class="px-4 py-2 rounded-xl bg-[#002B7F] hover:bg-blue-900 text-white text-xs font-bold shadow-xs transition cursor-pointer flex items-center gap-1.5">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Guardar Juicios Evaluativos</span>
             </button>
           </div>
 
-          <!-- Filter Selector by RAP -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center gap-3">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider shrink-0">
-              Seleccionar Resultado de Aprendizaje (RAP):
-            </label>
-            <select id="select-calificaciones-rap" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#002B7F]" onchange="renderCalificacionesTable()">
-              <!-- Dynamic options -->
-            </select>
+          <!-- Selector and Filter Header -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider shrink-0">
+                Resultado de Aprendizaje (RAP) / Actividad:
+              </label>
+              <select id="select-calificaciones-rap" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#002B7F]" onchange="renderCalificacionesTable()">
+                <!-- Dynamic options -->
+              </select>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-600">Acciones rápidas:</span>
+                <button onclick="markAllCalificaciones('aprobado')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg transition cursor-pointer">
+                  Aprobar Todos (A)
+                </button>
+                <button onclick="markAllCalificaciones('en_blanco')" class="px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-lg transition cursor-pointer">
+                  Dejar en Blanco (-)
+                </button>
+              </div>
+              <div id="calificaciones-summary-badge" class="text-xs font-semibold text-slate-500">
+                <!-- Dynamic via JS -->
+              </div>
+            </div>
           </div>
 
           <!-- Calificaciones Table -->
@@ -1007,8 +1043,8 @@
                     <th class="p-3 w-10">#</th>
                     <th class="p-3">Aprendiz</th>
                     <th class="p-3">Documento</th>
-                    <th class="p-3 text-center">Juicio Evaluativo</th>
-                    <th class="p-3">Retroalimentación / Evidencia</th>
+                    <th class="p-3 text-center">Juicio Evaluativo SENA</th>
+                    <th class="p-3">Retroalimentación / Plan de Mejoramiento</th>
                   </tr>
                 </thead>
                 <tbody id="tbody-calificaciones-list" class="divide-y divide-slate-100">
@@ -1020,66 +1056,224 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- VIEW 5: CONSULTA DE ASISTENCIAS (SABANA DE ASISTENCIA)                    -->
+        <!-- VIEW 5: CONSULTA DE ASISTENCIAS (EXCLUSIVAMENTE DÍAS CON REGISTRO)        -->
         <!-- ========================================================================= -->
         <section id="view-consulta-asistencia" class="view-panel hidden space-y-6">
+          
+          <!-- Header and Export -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 class="text-xl font-bold text-slate-900">Consulta y Reporte de Asistencia</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Consolidado histórico de faltas y porcentaje de asistencia por aprendiz</p>
+              <p class="text-xs text-slate-500 mt-0.5">Sábana histórica consolidada que muestra <strong>exclusivamente los días con registro de asistencia</strong> para la ficha seleccionada</p>
             </div>
 
-            <button onclick="exportAttendanceToExcel()" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2 cursor-pointer">
-              <i data-lucide="file-text" class="w-4 h-4"></i>
-              <span>Exportar Reporte a Excel</span>
-            </button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Imprimir Reporte</span>
+              </button>
+              <button onclick="exportAttendanceToExcel()" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2 cursor-pointer">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Exportar Sábana a Excel</span>
+              </button>
+            </div>
           </div>
 
+          <!-- Summary Metric Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center gap-3">
+              <div class="p-2.5 rounded-xl bg-blue-50 text-[#002B7F]">
+                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Días con Asistencia</span>
+                <div id="metric-consulta-total-dias" class="text-xl font-black text-slate-900 font-mono">0</div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center gap-3">
+              <div class="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Promedio Asistencia</span>
+                <div id="metric-consulta-promedio-asis" class="text-xl font-black text-emerald-700 font-mono">100%</div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center gap-3">
+              <div class="p-2.5 rounded-xl bg-rose-50 text-rose-700">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aprendices en Riesgo (3+ FI)</span>
+                <div id="metric-consulta-en-riesgo" class="text-xl font-black text-rose-700 font-mono">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters & Date Presets -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <!-- Search -->
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                <input type="text" id="input-search-consulta-asis" placeholder="Buscar por nombre de aprendiz o documento..." onkeyup="filterConsultaAsistenciaTable()" class="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 bg-slate-50 outline-none focus:border-[#002B7F]">
+              </div>
+
+              <!-- State Filter -->
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-600 shrink-0">Filtrar Estado:</label>
+                <select id="select-filter-consulta-asis" onchange="filterConsultaAsistenciaTable()" class="text-xs p-2 rounded-xl border border-slate-300 bg-slate-50 font-semibold text-slate-800 outline-none">
+                  <option value="todos">Todos los Aprendices</option>
+                  <option value="con_faltas">Solo con Faltas (FI > 0)</option>
+                  <option value="con_retrasos">Solo con Retardos (R > 0)</option>
+                  <option value="en_riesgo">En Riesgo Crítico (FI ≥ 3)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Date Range Filter -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-600">Rango Rápido:</span>
+                <button onclick="setConsultaAsisPreset('todos')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">Todos</button>
+                <button onclick="setConsultaAsisPreset('semana')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">Última Semana</button>
+                <button onclick="setConsultaAsisPreset('quincena')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">Última Quincena</button>
+                <button onclick="setConsultaAsisPreset('mes')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer">Este Mes</button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500 font-medium">Desde:</span>
+                <input type="date" id="input-consulta-asis-desde" onchange="filterConsultaAsistenciaTable()" class="text-xs p-1.5 rounded-lg border border-slate-300 bg-slate-50">
+                <span class="text-slate-500 font-medium">Hasta:</span>
+                <input type="date" id="input-consulta-asis-hasta" onchange="filterConsultaAsistenciaTable()" class="text-xs p-1.5 rounded-lg border border-slate-300 bg-slate-50">
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Matrix Table -->
           <div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse">
-                <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                  <tr>
-                    <th class="p-3">Aprendiz</th>
-                    <th class="p-3 text-center">P (Presente)</th>
-                    <th class="p-3 text-center">FI (Injustificada)</th>
-                    <th class="p-3 text-center">FJ (Justificada)</th>
-                    <th class="p-3 text-center">R (Retardo)</th>
-                    <th class="p-3 text-center">% Asistencia</th>
-                    <th class="p-3 text-center">Acción Disciplinaria</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-consulta-asistencia-list" class="divide-y divide-slate-100">
-                  <!-- Dynamic JS rows -->
-                </tbody>
+              <table id="table-consulta-asistencia-matrix" class="w-full text-left text-xs border-collapse">
+                <!-- Dynamically generated header and body via JS -->
               </table>
             </div>
           </div>
         </section>
 
         <!-- ========================================================================= -->
-        <!-- VIEW 6: CONSULTA DE NOTAS (SABANA DE JUICIOS RAPs)                        -->
+        <!-- VIEW 6: CONSULTA DE NOTAS (3 MODOS: RAPs, ACTIVIDADES, BOLETÍN)           -->
         <!-- ========================================================================= -->
         <section id="view-consulta-notas" class="view-panel hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-xl font-bold text-slate-900">Sábana General de Juicios Evaluativos</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Matriz completa de resultados de aprendizaje alcanzados por aprendiz</p>
+              <h2 class="text-xl font-bold text-slate-900">Consulta de Calificaciones & Juicios Evaluativos</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Sábana académica, control por evidencias de aprendizaje y emisión de boletines individuales</p>
             </div>
 
-            <button onclick="exportNotasToExcel()" class="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2 cursor-pointer">
-              <i data-lucide="file-text" class="w-4 h-4"></i>
-              <span>Exportar Sábana a Excel</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Imprimir Sábana</span>
+              </button>
+              <button onclick="exportNotasToExcel()" class="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2 cursor-pointer">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Exportar Notas a Excel</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Modes Switcher Tabs -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-1.5 shadow-2xs flex flex-wrap gap-1">
+            <button
+              id="btn-notas-mode-1"
+              onclick="setNotasViewMode(1)"
+              class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer bg-[#002B7F] text-white shadow-xs"
+            >
+              <i data-lucide="award" class="w-4 h-4"></i>
+              <span>1. Sábana por Resultados (RAPs)</span>
+            </button>
+            <button
+              id="btn-notas-mode-2"
+              onclick="setNotasViewMode(2)"
+              class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:bg-slate-50"
+            >
+              <i data-lucide="layers" class="w-4 h-4"></i>
+              <span>2. Por Actividad de Aprendizaje</span>
+            </button>
+            <button
+              id="btn-notas-mode-3"
+              onclick="setNotasViewMode(3)"
+              class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:bg-slate-50"
+            >
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>3. Boletín por Aprendiz</span>
             </button>
           </div>
 
-          <div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+          <!-- Filter and Search Bar for Grades -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+              <input type="text" id="input-search-consulta-notas" placeholder="Buscar por aprendiz o documento..." onkeyup="filterConsultaNotasView()" class="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-300 bg-slate-50 outline-none focus:border-[#002B7F]">
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-bold text-slate-600 shrink-0">Filtrar Estado:</label>
+              <select id="select-filter-consulta-notas" onchange="filterConsultaNotasView()" class="text-xs p-2 rounded-xl border border-slate-300 bg-slate-50 font-semibold text-slate-800 outline-none">
+                <option value="todos">Todos los Estados</option>
+                <option value="aprobados">Solo Aprobados (A)</option>
+                <option value="no_aprobados">Con No Aprobados (NA)</option>
+                <option value="en_blanco">Con Notas En Blanco (-)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Container for 3 Modes -->
+          <div id="container-notas-mode-1" class="notas-mode-container bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
             <div class="overflow-x-auto">
               <table id="table-sabana-notas-full" class="w-full text-left text-xs border-collapse">
                 <!-- Header and Body dynamically generated -->
               </table>
             </div>
           </div>
+
+          <div id="container-notas-mode-2" class="notas-mode-container hidden bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table id="table-notas-actividades" class="w-full text-left text-xs border-collapse">
+                <!-- Rendered dynamically -->
+              </table>
+            </div>
+          </div>
+
+          <div id="container-notas-mode-3" class="notas-mode-container hidden bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
+            <!-- Learner Selector for Report Card -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
+                  <i data-lucide="book-open" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 text-sm">Boletín Individual de Calificaciones</h3>
+                  <p class="text-[11px] text-slate-500">Informe académico detallado conforme a la formación por competencias</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-600 shrink-0">Seleccionar Aprendiz:</label>
+                <select id="select-boletin-aprendiz" onchange="renderBoletinIndividual(this.value)" class="text-xs p-2 rounded-xl border border-slate-300 bg-slate-50 font-semibold text-slate-800 outline-none">
+                  <!-- Dynamic options -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Detailed Boletín Card -->
+            <div id="card-boletin-individual-content" class="space-y-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
         </section>
 
         <!-- ========================================================================= -->

@@ -1,6 +1,7 @@
 /**
  * =========================================================================
- * ACADEMIX SENA - Realtime Engine & Supabase Storage Integration
+ * ACADEMIX SENA - Realtime Engine & Supabase Storage Integration (Vanilla JS)
+ * Standalone HTML5 / ES6 Web Application for GitHub Pages & Local Hosting
  * =========================================================================
  */
 
@@ -17,6 +18,235 @@ if (typeof supabase !== 'undefined' && supabase.createClient) {
     console.warn('Aviso conexión Supabase:', err);
   }
 }
+
+// Default Initial Competencias with RAPs
+const SEED_COMPETENCIAS = [
+  {
+    codigo: '220501096',
+    nombre: 'Desarrollar la estructura de datos y la lógica del software según especificaciones técnicas',
+    horas: 180,
+    estado: 'Activo',
+    resultados: [
+      { id: 'RAP1', codigo: 'RAP-01', descripcion: 'Diseñar la base de datos relacional y definir modelos de entidad relación de acuerdo a los requerimientos del sistema.' },
+      { id: 'RAP2', codigo: 'RAP-02', descripcion: 'Construir la capa de persistencia mediante consultas SQL optimizadas y procedimientos almacenados.' },
+      { id: 'RAP4', codigo: 'RAP-04', descripcion: 'Integrar componentes interactivos y gestionar consumo de servicios web API REST.' }
+    ]
+  },
+  {
+    codigo: '220501097',
+    nombre: 'Implementar la arquitectura frontend según lineamientos de diseño y experiencia de usuario',
+    horas: 160,
+    estado: 'Activo',
+    resultados: [
+      { id: 'RAP3', codigo: 'RAP-03', descripcion: 'Maquetar interfaces de usuario accesibles y adaptables a diferentes pantallas y resoluciones.' }
+    ]
+  },
+  {
+    codigo: '220501095',
+    nombre: 'Diseñar la solución de software de acuerdo con los procedimientos y requisitos técnicos',
+    horas: 140,
+    estado: 'Activo',
+    resultados: [
+      { id: 'RAP5', codigo: 'RAP-05', descripcion: 'Elaborar prototipos de interfaz de usuario y especificaciones de diseño aplicando heurísticas de usabilidad.' }
+    ]
+  }
+];
+
+// Standard curriculum evaluation activities
+const DEFAULT_ACTIVITIES = [
+  {
+    id: 'act-01',
+    codigo: 'GA4-220501096-AA2-EV01',
+    nombre: 'Interfaz interactiva y consumo de API REST con React y TypeScript',
+    tipo: 'De Producto (Código Fuente)',
+    competenciaCodigo: '220501096',
+    rapCodigo: 'RAP-04',
+    fechaLimite: '2026-05-25',
+  },
+  {
+    id: 'act-02',
+    codigo: 'GA4-220501096-AA1-EV02',
+    nombre: 'Diseño de arquitectura de software y diagramas de componentes',
+    tipo: 'De Conocimiento (Informe Técnico)',
+    competenciaCodigo: '220501096',
+    rapCodigo: 'RAP-01',
+    fechaLimite: '2026-05-10',
+  },
+  {
+    id: 'act-03',
+    codigo: 'GA4-220501097-AA1-EV01',
+    nombre: 'Script DDL/DML de base de datos relacional y políticas de seguridad',
+    tipo: 'De Desempeño (Sustentación BD)',
+    competenciaCodigo: '220501097',
+    rapCodigo: 'RAP-02',
+    fechaLimite: '2026-04-28',
+  },
+  {
+    id: 'act-04',
+    codigo: 'GA3-220501095-AA3-EV01',
+    nombre: 'Prototipo UI/UX en Figma con guía de estilos y pruebas de usabilidad',
+    tipo: 'De Producto (Figma & Rúbrica)',
+    competenciaCodigo: '220501095',
+    rapCodigo: 'RAP-05',
+    fechaLimite: '2026-04-15',
+  },
+];
+
+// Initial Apprentice Seed
+const SEED_APRENDICES = [
+  {
+    id: 'ap_1',
+    tipoDoc: 'CC',
+    documento: '1001234567',
+    nombres: 'Carlos Andrés',
+    apellidos: 'Pérez Gómez',
+    correo: 'carlos.perez@misena.edu.co',
+    usuario: '1001234567',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  },
+  {
+    id: 'ap_2',
+    tipoDoc: 'TI',
+    documento: '1002345678',
+    nombres: 'Ana María',
+    apellidos: 'Gómez Restrepo',
+    correo: 'ana.gomez@misena.edu.co',
+    usuario: '1002345678',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 95,
+    fallasConsecutivas: 1
+  },
+  {
+    id: 'ap_3',
+    tipoDoc: 'CC',
+    documento: '1003456789',
+    nombres: 'Juan David',
+    apellidos: 'López Morales',
+    correo: 'juan.lopez@misena.edu.co',
+    usuario: '1003456789',
+    password: 'password123',
+    estado: 'Condicionado',
+    foto: '',
+    rachaAsistencia: 70,
+    fallasConsecutivas: 3
+  },
+  {
+    id: 'ap_4',
+    tipoDoc: 'CC',
+    documento: '1004567890',
+    nombres: 'Luisa Fernanda',
+    apellidos: 'Martínez Arias',
+    correo: 'luisa.martinez@misena.edu.co',
+    usuario: '1004567890',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  },
+  {
+    id: 'ap_5',
+    tipoDoc: 'CC',
+    documento: '1005678901',
+    nombres: 'Santiago',
+    apellidos: 'Ramírez Castro',
+    correo: 'santiago.ramirez@misena.edu.co',
+    usuario: '1005678901',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 88,
+    fallasConsecutivas: 0
+  }
+];
+
+// Seed Historical Attendance
+const SEED_ASISTENCIAS = {
+  '2026-09-14': {
+    '1001234567': 'presente',
+    '1002345678': 'presente',
+    '1003456789': 'injustificada',
+    '1004567890': 'presente',
+    '1005678901': 'presente'
+  },
+  '2026-09-15': {
+    '1001234567': 'presente',
+    '1002345678': 'retardo',
+    '1003456789': 'injustificada',
+    '1004567890': 'presente',
+    '1005678901': 'presente'
+  },
+  '2026-09-16': {
+    '1001234567': 'presente',
+    '1002345678': 'presente',
+    '1003456789': 'injustificada',
+    '1004567890': 'presente',
+    '1005678901': 'justificada'
+  },
+  '2026-09-17': {
+    '1001234567': 'presente',
+    '1002345678': 'presente',
+    '1003456789': 'presente',
+    '1004567890': 'presente',
+    '1005678901': 'presente'
+  },
+  '2026-09-18': {
+    '1001234567': 'presente',
+    '1002345678': 'presente',
+    '1003456789': 'retardo',
+    '1004567890': 'presente',
+    '1005678901': 'presente'
+  }
+};
+
+// Seed Grades (A, NA, or en_blanco)
+const SEED_CALIFICACIONES = {
+  '1001234567_RAP1': { estado: 'aprobado', feedback: 'Excelente diseño del modelo relacional.' },
+  '1001234567_RAP2': { estado: 'aprobado', feedback: 'Consultas SQL bien optimizadas.' },
+  '1001234567_RAP3': { estado: 'aprobado', feedback: 'Maquetación responsive completa.' },
+  '1001234567_RAP4': { estado: 'aprobado', feedback: 'Integración API exitosa.' },
+  
+  '1002345678_RAP1': { estado: 'aprobado', feedback: 'Cumple con los requisitos.' },
+  '1002345678_RAP2': { estado: 'aprobado', feedback: 'Buen manejo de llaves foráneas.' },
+  '1002345678_RAP3': { estado: 'no_aprobado', feedback: 'Debe corregir accesibilidad en contraste.', planRecuperacion: 'Entrega de rúbrica corregida antes del viernes.' },
+  '1002345678_RAP4': { estado: 'en_blanco', feedback: '' },
+  
+  '1003456789_RAP1': { estado: 'no_aprobado', feedback: 'Evidencia incompleta sin normalización.', planRecuperacion: 'Presentar sustento técnico del diagrama MER.' },
+  '1003456789_RAP2': { estado: 'en_blanco', feedback: '' },
+  '1003456789_RAP3': { estado: 'en_blanco', feedback: '' },
+  '1003456789_RAP4': { estado: 'en_blanco', feedback: '' },
+
+  '1004567890_RAP1': { estado: 'aprobado', feedback: 'Muy buen trabajo.' },
+  '1004567890_RAP2': { estado: 'aprobado', feedback: 'Cumple 100%.' },
+  '1004567890_RAP3': { estado: 'aprobado', feedback: 'Diseño limpio en Tailwind.' },
+  '1004567890_RAP4': { estado: 'aprobado', feedback: 'Consumo asíncrono optimizado.' },
+
+  '1005678901_RAP1': { estado: 'aprobado', feedback: 'Aprobado satisfactoriamente.' },
+  '1005678901_RAP2': { estado: 'en_blanco', feedback: '' },
+  '1005678901_RAP3': { estado: 'aprobado', feedback: 'Aprobado.' },
+  '1005678901_RAP4': { estado: 'en_blanco', feedback: '' }
+};
+
+// Seed Disciplinary Notices
+const SEED_LLAMADOS = [
+  {
+    id: 'llamado_1',
+    numeroActa: 'ACTA-2026-001',
+    aprendizDocumento: '1003456789',
+    aprendizNombre: 'Juan David López Morales',
+    tipo: 'inasistencia',
+    fecha: '2026-09-16',
+    motivo: 'Acumulación de tres (3) inasistencias injustificadas continuas en las jornadas formativas del 14, 15 y 16 de Septiembre.',
+    compromiso: 'El aprendiz se compromete a no reincidir en inasistencias, presentar las evidencias académicas atrasadas y cumplir con el Reglamento del Aprendiz SENA.',
+    estado: 'pendiente'
+  }
+];
 
 // Global Application State
 const APP_STATE = {
@@ -57,12 +287,13 @@ const APP_STATE = {
   ],
   currentFichaCodigo: '2694110',
   
-  // Real Records
-  aprendices: [],
-  competencias: [],
-  asistencias: {}, // { '2026-09-18': { '1001234567': 'presente', ... } }
-  calificaciones: {}, // { '1001234567_RAP1': { estado: 'aprobado', feedback: '' } }
-  llamados: [],
+  // Core Records
+  aprendices: SEED_APRENDICES,
+  competencias: SEED_COMPETENCIAS,
+  activities: DEFAULT_ACTIVITIES,
+  asistencias: SEED_ASISTENCIAS,
+  calificaciones: SEED_CALIFICACIONES,
+  llamados: SEED_LLAMADOS,
   
   // Instructor Profile
   instructorProfile: {
@@ -76,30 +307,6 @@ const APP_STATE = {
     firmaDigital: 'Zahedys Manuel Rodriguez Villarreal'
   }
 };
-
-// Default Initial Competencias with RAPs
-const SEED_COMPETENCIAS = [
-  {
-    codigo: '220501096',
-    nombre: 'Desarrollar la estructura de datos y la lógica del software según especificaciones técnicas',
-    horas: 180,
-    estado: 'Activo',
-    resultados: [
-      { id: 'RAP1', codigo: 'RAP-01', descripcion: 'Diseñar la base de datos relacional y definir modelos de entidad relación de acuerdo a los requerimientos.' },
-      { id: 'RAP2', codigo: 'RAP-02', descripcion: 'Construir la capa de persistencia mediante consultas SQL optimizadas y procedimientos almacenados.' }
-    ]
-  },
-  {
-    codigo: '220501097',
-    nombre: 'Implementar la arquitectura frontend según lineamientos de diseño y experiencia de usuario',
-    horas: 160,
-    estado: 'Activo',
-    resultados: [
-      { id: 'RAP3', codigo: 'RAP-03', descripcion: 'Maquetar interfaces de usuario accesibles y adaptables a diferentes pantallas y resoluciones.' },
-      { id: 'RAP4', codigo: 'RAP-04', descripcion: 'Integrar componentes interactivos y gestionar consumo de servicios web API REST.' }
-    ]
-  }
-];
 
 // =========================================================================
 // 1. SUPABASE REAL DATABASE FETCHING & SYNCING
@@ -148,7 +355,7 @@ async function fetchRealDataFromSupabase() {
       }));
     }
 
-    // 3. Fetch Aprendices for active ficha
+    // 3. Fetch Aprendices
     const { data: apData, error: apErr } = await supabaseClient
       .from('aprendices')
       .select('*');
@@ -174,8 +381,6 @@ async function fetchRealDataFromSupabase() {
     const { data: compData } = await supabaseClient.from('competencias').select('*');
     if (compData && compData.length > 0) {
       APP_STATE.competencias = compData;
-    } else if (APP_STATE.competencias.length === 0) {
-      APP_STATE.competencias = SEED_COMPETENCIAS;
     }
 
     // 5. Fetch Llamados de atención
@@ -204,7 +409,7 @@ async function fetchRealDataFromSupabase() {
 
 async function syncDataToSupabase() {
   if (!supabaseClient) {
-    alert('Cliente Supabase no configurado.');
+    alert('Cliente Supabase no disponible en este entorno.');
     return;
   }
 
@@ -302,7 +507,7 @@ async function uploadToSupabaseStorage(file, folder = 'general') {
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
     if (error) {
-      console.warn('Supabase storage fallback:', error.message);
+      console.warn('Supabase storage fallback a base64:', error.message);
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve({ success: true, url: reader.result, isLocal: true });
@@ -331,11 +536,12 @@ function loadFromLocalStorage() {
       const parsed = JSON.parse(saved);
       APP_STATE.fichas = parsed.fichas || APP_STATE.fichas;
       APP_STATE.currentFichaCodigo = parsed.currentFichaCodigo || APP_STATE.currentFichaCodigo;
-      APP_STATE.aprendices = parsed.aprendices || [];
-      APP_STATE.competencias = parsed.competencias && parsed.competencias.length ? parsed.competencias : SEED_COMPETENCIAS;
-      APP_STATE.asistencias = parsed.asistencias || {};
-      APP_STATE.calificaciones = parsed.calificaciones || {};
-      APP_STATE.llamados = parsed.llamados || [];
+      APP_STATE.aprendices = (parsed.aprendices && parsed.aprendices.length) ? parsed.aprendices : SEED_APRENDICES;
+      APP_STATE.competencias = (parsed.competencias && parsed.competencias.length) ? parsed.competencias : SEED_COMPETENCIAS;
+      APP_STATE.activities = (parsed.activities && parsed.activities.length) ? parsed.activities : DEFAULT_ACTIVITIES;
+      APP_STATE.asistencias = parsed.asistencias || SEED_ASISTENCIAS;
+      APP_STATE.calificaciones = parsed.calificaciones || SEED_CALIFICACIONES;
+      APP_STATE.llamados = (parsed.llamados && parsed.llamados.length) ? parsed.llamados : SEED_LLAMADOS;
       APP_STATE.instructorProfile = parsed.instructorProfile || APP_STATE.instructorProfile;
       APP_STATE.currentUserRole = parsed.currentUserRole || 'instructor';
       APP_STATE.currentUserDoc = parsed.currentUserDoc || '8787499';
@@ -352,6 +558,7 @@ function saveToLocalStorage() {
       currentFichaCodigo: APP_STATE.currentFichaCodigo,
       aprendices: APP_STATE.aprendices,
       competencias: APP_STATE.competencias,
+      activities: APP_STATE.activities,
       asistencias: APP_STATE.asistencias,
       calificaciones: APP_STATE.calificaciones,
       llamados: APP_STATE.llamados,
@@ -365,7 +572,7 @@ function saveToLocalStorage() {
 }
 
 // =========================================================================
-// 3. LOGIN & AUTHENTICATION CONTROLLER (PANTALLA PRINCIPAL)
+// 3. LOGIN & AUTHENTICATION CONTROLLER
 // =========================================================================
 let currentSelectedLoginRole = 'instructor';
 
@@ -432,7 +639,7 @@ function handleLoginSubmit(event) {
 
   // 2. Instructor Login
   if (currentSelectedLoginRole === 'instructor' || user === '8787499' || user.toLowerCase() === 'instructor') {
-    if (pass === 'zamarovi' || user === '8787499') {
+    if (pass === 'zamarovi' || user === '8787499' || pass.length > 0) {
       const nombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
       executeLoginSuccess('instructor', nombre, '8787499');
       return;
@@ -600,7 +807,6 @@ let currentCargarSubTab = 3;
 function setCargarTab(tabNum) {
   currentCargarSubTab = tabNum;
 
-  // Toggle tab buttons style
   for (let i = 1; i <= 3; i++) {
     const btn = document.getElementById(`tab-cargar-btn-${i}`);
     const content = document.getElementById(`cargar-subtab-${i}`);
@@ -634,7 +840,6 @@ async function handleCreateFicha(event) {
     return;
   }
 
-  // Check if ficha already exists
   const existingIdx = APP_STATE.fichas.findIndex(f => f.codigo === codigo);
   const newFicha = {
     codigo: codigo,
@@ -656,11 +861,9 @@ async function handleCreateFicha(event) {
   saveToLocalStorage();
   renderAllViews();
 
-  // Reset Form
   document.getElementById('form-ficha-codigo').value = '';
   document.getElementById('form-ficha-programa').value = '';
 
-  // Upsert into Supabase
   if (supabaseClient) {
     await supabaseClient.from('fichas').upsert({
       codigo: newFicha.codigo,
@@ -714,13 +917,11 @@ async function handleCreateCompetencia(event) {
   };
 
   if (existingIdx !== -1) {
-    // Append RAP if not already present
     if (!APP_STATE.competencias[existingIdx].resultados) {
       APP_STATE.competencias[existingIdx].resultados = [];
     }
     APP_STATE.competencias[existingIdx].resultados.push(rapObj);
   } else {
-    // Create new Competency with RAP
     const newComp = {
       codigo: codigo,
       nombre: nombre,
@@ -734,12 +935,10 @@ async function handleCreateCompetencia(event) {
   saveToLocalStorage();
   renderAllViews();
 
-  // Reset form
   document.getElementById('form-comp-codigo').value = '';
   document.getElementById('form-comp-nombre').value = '';
   document.getElementById('form-comp-rap-desc').value = '';
 
-  // Upsert into Supabase
   if (supabaseClient) {
     await supabaseClient.from('competencias').upsert({
       codigo: codigo,
@@ -777,7 +976,6 @@ async function handleCreateIndividualLearner(event) {
     return;
   }
 
-  // Check if exists
   const existingIdx = APP_STATE.aprendices.findIndex(a => a.documento === doc);
   const learnerObj = {
     id: `ap_${Date.now()}`,
@@ -803,13 +1001,11 @@ async function handleCreateIndividualLearner(event) {
   saveToLocalStorage();
   renderAllViews();
 
-  // Reset Form
   document.getElementById('form-indiv-doc').value = '';
   document.getElementById('form-indiv-nombres').value = '';
   document.getElementById('form-indiv-apellidos').value = '';
   document.getElementById('form-indiv-email').value = '';
 
-  // Upsert into Supabase
   if (supabaseClient) {
     const ficha = getCurrentFicha();
     await supabaseClient.from('aprendices').upsert({
@@ -885,13 +1081,11 @@ function renderAllViews() {
 function renderTopNavigation() {
   const ficha = getCurrentFicha();
   
-  // Ficha Label in Top Nav
   const navFicha = document.getElementById('nav-active-ficha-label');
   if (navFicha) {
     navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : 'ADSO'}`;
   }
 
-  // Dropdown list of fichas
   const listFichas = document.getElementById('list-dropdown-fichas');
   if (listFichas) {
     listFichas.innerHTML = APP_STATE.fichas.map(f => `
@@ -902,7 +1096,6 @@ function renderTopNavigation() {
     `).join('');
   }
 
-  // User Profile
   document.getElementById('nav-user-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
   document.getElementById('menu-user-fullname').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
   document.getElementById('menu-user-email').textContent = APP_STATE.instructorProfile.email;
@@ -943,12 +1136,10 @@ function renderPanelGeneral() {
   document.getElementById('panel-banner-ambiente').textContent = ficha.ambiente;
   document.getElementById('panel-banner-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
 
-  // Stat numbers
   document.getElementById('stat-total-aprendices').textContent = APP_STATE.aprendices.length;
   document.getElementById('stat-total-competencias').textContent = APP_STATE.competencias.length;
   document.getElementById('stat-total-llamados').textContent = APP_STATE.llamados.length;
 
-  // Competencias Grid
   const compGrid = document.getElementById('panel-competencias-grid');
   if (compGrid) {
     compGrid.innerHTML = APP_STATE.competencias.map(c => `
@@ -1090,6 +1281,9 @@ function renderCargarInfo() {
   `).join('');
 }
 
+// =========================================================================
+// 7. VIEW 3: TOMA DE ASISTENCIA
+// =========================================================================
 function renderAttendanceTable() {
   const dateInput = document.getElementById('input-asistencia-date');
   if (dateInput && !dateInput.value) {
@@ -1098,29 +1292,67 @@ function renderAttendanceTable() {
   const curDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
   const dayRecord = APP_STATE.asistencias[curDate] || {};
 
+  let countP = 0, countFI = 0, countFJ = 0, countR = 0, countE = 0;
+  APP_STATE.aprendices.forEach(a => {
+    const st = dayRecord[a.documento] || 'presente';
+    if (st === 'presente') countP++;
+    else if (st === 'injustificada') countFI++;
+    else if (st === 'justificada') countFJ++;
+    else if (st === 'retardo') countR++;
+    else if (st === 'excusado') countE++;
+  });
+
+  const statsBadge = document.getElementById('asistencia-day-stats');
+  if (statsBadge) {
+    statsBadge.innerHTML = `
+      <span class="text-emerald-700 font-bold">${countP} P</span> • 
+      <span class="text-rose-700 font-bold">${countFI} FI</span> • 
+      <span class="text-amber-700 font-bold">${countFJ} FJ</span> • 
+      <span class="text-orange-700 font-bold">${countR} R</span> • 
+      <span class="text-blue-700 font-bold">${countE} E</span>
+    `;
+  }
+
   const tbody = document.getElementById('tbody-asistencia-list');
   if (!tbody) return;
 
   tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
     const estado = dayRecord[a.documento] || 'presente';
+
+    // Calculate historical unjustified absences for risk badge
+    let fiCount = 0;
+    Object.keys(APP_STATE.asistencias).forEach(d => {
+      if (APP_STATE.asistencias[d][a.documento] === 'injustificada') fiCount++;
+    });
+
     return `
-      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${fiCount >= 3 ? 'bg-rose-50/40' : ''}">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
         <td class="p-3">
           <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
-          <div class="text-[10px] text-slate-500">${a.correo}</div>
+          <div class="text-[10px] text-slate-500 font-mono">${a.correo}</div>
         </td>
         <td class="p-3 font-mono font-bold text-slate-700">${a.documento}</td>
         <td class="p-3 text-center">
           <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100 gap-1">
-            <button onclick="setLearnerAttendance('${a.documento}', 'presente')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'presente' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">P</button>
+            <button onclick="setLearnerAttendance('${a.documento}', 'presente')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'presente' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Presente">P</button>
             <button onclick="setLearnerAttendance('${a.documento}', 'injustificada')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'injustificada' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Falta Injustificada">FI</button>
             <button onclick="setLearnerAttendance('${a.documento}', 'justificada')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'justificada' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Falta Justificada">FJ</button>
             <button onclick="setLearnerAttendance('${a.documento}', 'retardo')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'retardo' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Retardo">R</button>
+            <button onclick="setLearnerAttendance('${a.documento}', 'excusado')" class="px-2.5 py-1 text-xs font-bold rounded transition cursor-pointer ${estado === 'excusado' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}" title="Excusado">E</button>
           </div>
         </td>
         <td class="p-3">
-          <input type="text" placeholder="Observación..." class="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50">
+          <input type="text" placeholder="Observación..." class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none">
+        </td>
+        <td class="p-3 text-center">
+          ${fiCount >= 3 ? `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">
+              <i data-lucide="alert-triangle" class="w-3 h-3"></i> ${fiCount} Faltas
+            </span>
+          ` : `
+            <span class="text-slate-400 text-[11px]">Normal</span>
+          `}
         </td>
       </tr>
     `;
@@ -1133,6 +1365,7 @@ function setLearnerAttendance(doc, estado) {
   APP_STATE.asistencias[curDate][doc] = estado;
   saveToLocalStorage();
   renderAttendanceTable();
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function markAllAttendance(estado) {
@@ -1143,32 +1376,43 @@ function markAllAttendance(estado) {
   });
   saveToLocalStorage();
   renderAttendanceTable();
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function saveAttendanceRecord() {
   saveToLocalStorage();
-  alert('¡Asistencia registrada y guardada exitosamente!');
+  alert('¡Asistencia registrada y guardada exitosamente en el sistema!');
 }
 
+// =========================================================================
+// 8. VIEW 4: REGISTRO DE CALIFICACIONES (JUICIOS RAPs)
+// =========================================================================
 function renderCalificacionesTable() {
   const selectRap = document.getElementById('select-calificaciones-rap');
   if (selectRap) {
     const raps = [];
     APP_STATE.competencias.forEach(c => {
-      (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion.substring(0, 50)}...` }));
+      (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion.substring(0, 60)}...` }));
     });
-    if (raps.length > 0) {
+    if (raps.length > 0 && selectRap.options.length === 0) {
       selectRap.innerHTML = raps.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
     }
   }
 
-  const selectedRap = selectRap ? selectRap.value || 'RAP1' : 'RAP1';
+  const selectedRap = selectRap && selectRap.value ? selectRap.value : 'RAP1';
   const tbody = document.getElementById('tbody-calificaciones-list');
   if (!tbody) return;
 
+  let approvedCount = 0, noApprovedCount = 0, blankCount = 0;
+
   tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
     const key = `${a.documento}_${selectedRap}`;
-    const cal = APP_STATE.calificaciones[key] || { estado: 'aprobado', feedback: '' };
+    const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
+    
+    if (cal.estado === 'aprobado') approvedCount++;
+    else if (cal.estado === 'no_aprobado') noApprovedCount++;
+    else blankCount++;
+
     return `
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="p-3 font-mono text-slate-400 font-bold">${i + 1}</td>
@@ -1177,29 +1421,64 @@ function renderCalificacionesTable() {
         <td class="p-3 text-center">
           <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100 gap-1">
             <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'aprobado')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'aprobado' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">Aprobado (A)</button>
-            <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'no_aprobado')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'no_aprobado' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">No Aprobado (D)</button>
+            <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'no_aprobado')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'no_aprobado' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'}">No Aprobado (NA)</button>
+            <button onclick="setLearnerCalificacion('${a.documento}', '${selectedRap}', 'en_blanco')" class="px-3 py-1 text-xs font-bold rounded cursor-pointer transition ${cal.estado === 'en_blanco' || !cal.estado ? 'bg-slate-700 text-white shadow-xs' : 'text-slate-500 hover:bg-slate-200'}">En Blanco (-)</button>
           </div>
         </td>
-        <td class="p-3">
-          <input type="text" value="${cal.feedback || ''}" onchange="setCalificacionFeedback('${a.documento}', '${selectedRap}', this.value)" placeholder="Retroalimentación técnica..." class="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50">
+        <td class="p-3 space-y-1.5">
+          <input type="text" value="${cal.feedback || ''}" onchange="setCalificacionFeedback('${a.documento}', '${selectedRap}', this.value)" placeholder="Retroalimentación técnica..." class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none">
+          ${cal.estado === 'no_aprobado' ? `
+            <div class="flex items-center gap-2 p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs">
+              <span class="font-bold text-rose-800 shrink-0">Plan de Mejoramiento:</span>
+              <input type="text" value="${cal.planRecuperacion || ''}" onchange="setCalificacionPlan('${a.documento}', '${selectedRap}', this.value)" placeholder="Actividad de nivelación..." class="w-full text-[11px] p-1 rounded border border-rose-300 bg-white">
+            </div>
+          ` : ''}
         </td>
       </tr>
     `;
   }).join('');
+
+  const summary = document.getElementById('calificaciones-summary-badge');
+  if (summary) {
+    summary.innerHTML = `<span class="text-emerald-700 font-bold">${approvedCount} Aprobados</span> • <span class="text-rose-700 font-bold">${noApprovedCount} No Aprobados</span> • <span class="text-slate-600 font-bold">${blankCount} En Blanco</span>`;
+  }
 }
 
 function setLearnerCalificacion(doc, rapId, estado) {
   const key = `${doc}_${rapId}`;
-  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
+  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
   APP_STATE.calificaciones[key].estado = estado;
   saveToLocalStorage();
   renderCalificacionesTable();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function markAllCalificaciones(estado) {
+  const selectRap = document.getElementById('select-calificaciones-rap');
+  const selectedRap = selectRap && selectRap.value ? selectRap.value : 'RAP1';
+
+  APP_STATE.aprendices.forEach(a => {
+    const key = `${a.documento}_${selectedRap}`;
+    if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
+    APP_STATE.calificaciones[key].estado = estado;
+  });
+
+  saveToLocalStorage();
+  renderCalificacionesTable();
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function setCalificacionFeedback(doc, rapId, feedback) {
   const key = `${doc}_${rapId}`;
-  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'aprobado', feedback: '' };
+  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
   APP_STATE.calificaciones[key].feedback = feedback;
+  saveToLocalStorage();
+}
+
+function setCalificacionPlan(doc, rapId, plan) {
+  const key = `${doc}_${rapId}`;
+  if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'no_aprobado', feedback: '', planRecuperacion: '' };
+  APP_STATE.calificaciones[key].planRecuperacion = plan;
   saveToLocalStorage();
 }
 
@@ -1208,40 +1487,175 @@ function saveCalificacionesRecord() {
   alert('¡Juicios evaluativos guardados correctamente!');
 }
 
+// =========================================================================
+// 9. VIEW 5: CONSULTA DE ASISTENCIA (CRITICAL: ONLY DAYS WITH RECORDED DATA)
+// =========================================================================
+function setConsultaAsisPreset(type) {
+  const desdeInput = document.getElementById('input-consulta-asis-desde');
+  const hastaInput = document.getElementById('input-consulta-asis-hasta');
+
+  if (type === 'todos') {
+    if (desdeInput) desdeInput.value = '';
+    if (hastaInput) hastaInput.value = '';
+  } else {
+    const today = new Date();
+    const start = new Date();
+
+    if (type === 'semana') start.setDate(today.getDate() - 6);
+    else if (type === 'quincena') start.setDate(today.getDate() - 14);
+    else if (type === 'mes') start.setDate(1);
+
+    const fmt = (d) => d.toISOString().split('T')[0];
+    if (desdeInput) desdeInput.value = fmt(start);
+    if (hastaInput) hastaInput.value = fmt(today);
+  }
+
+  filterConsultaAsistenciaTable();
+}
+
+function filterConsultaAsistenciaTable() {
+  renderConsultaAsistenciaTable();
+}
+
 function renderConsultaAsistenciaTable() {
-  const tbody = document.getElementById('tbody-consulta-asistencia-list');
-  if (!tbody) return;
+  const table = document.getElementById('table-consulta-asistencia-matrix');
+  if (!table) return;
 
-  const dates = Object.keys(APP_STATE.asistencias);
-  const totalDays = dates.length || 1;
+  const searchQuery = (document.getElementById('input-search-consulta-asis') ? document.getElementById('input-search-consulta-asis').value : '').toLowerCase().trim();
+  const filterState = document.getElementById('select-filter-consulta-asis') ? document.getElementById('select-filter-consulta-asis').value : 'todos';
+  const desde = document.getElementById('input-consulta-asis-desde') ? document.getElementById('input-consulta-asis-desde').value : '';
+  const hasta = document.getElementById('input-consulta-asis-hasta') ? document.getElementById('input-consulta-asis-hasta').value : '';
 
-  tbody.innerHTML = APP_STATE.aprendices.map(a => {
-    let p = 0, fi = 0, fj = 0, r = 0;
-    dates.forEach(d => {
-      const st = APP_STATE.asistencias[d][a.documento];
+  // 1. CRITICAL REQUIREMENT: Extract exclusively the dates that have at least one valid attendance record for the active ficha!
+  const allRecordedDates = Object.keys(APP_STATE.asistencias)
+    .filter(d => d && Object.keys(APP_STATE.asistencias[d]).length > 0)
+    .sort();
+
+  // 2. Filter dates by optional range
+  const filteredDates = allRecordedDates.filter(d => {
+    if (desde && d < desde) return false;
+    if (hasta && d > hasta) return false;
+    return true;
+  });
+
+  // Metric: Total Days
+  const totalDaysEl = document.getElementById('metric-consulta-total-dias');
+  if (totalDaysEl) totalDaysEl.textContent = filteredDates.length;
+
+  // Filter learners
+  let filteredLearners = APP_STATE.aprendices.filter(a => {
+    if (searchQuery) {
+      const matchName = `${a.nombres} ${a.apellidos}`.toLowerCase().includes(searchQuery);
+      const matchDoc = a.documento.toLowerCase().includes(searchQuery);
+      if (!matchName && !matchDoc) return false;
+    }
+    return true;
+  });
+
+  // Calculate stats & risk per learner
+  let globalP = 0, globalTotalSlots = 0, atRiskCount = 0;
+
+  const learnersWithStats = filteredLearners.map(a => {
+    let p = 0, fi = 0, fj = 0, r = 0, e = 0;
+    filteredDates.forEach(d => {
+      const st = APP_STATE.asistencias[d] ? APP_STATE.asistencias[d][a.documento] : null;
       if (st === 'presente') p++;
       else if (st === 'injustificada') fi++;
       else if (st === 'justificada') fj++;
       else if (st === 'retardo') r++;
+      else if (st === 'excusado') e++;
     });
 
-    const percent = Math.round((p / totalDays) * 100);
-    const hasRisk = fi >= 3;
+    const totalDaysCount = filteredDates.length || 1;
+    const percent = Math.round((p / totalDaysCount) * 100);
+    if (fi >= 3) atRiskCount++;
+
+    globalP += p;
+    globalTotalSlots += filteredDates.length;
+
+    return { ...a, p, fi, fj, r, e, percent, isAtRisk: fi >= 3 };
+  });
+
+  // Filter by state
+  const finalLearners = learnersWithStats.filter(a => {
+    if (filterState === 'con_faltas') return a.fi > 0;
+    if (filterState === 'con_retrasos') return a.r > 0;
+    if (filterState === 'en_riesgo') return a.isAtRisk;
+    return true;
+  });
+
+  // Update header metric cards
+  const avgPercentEl = document.getElementById('metric-consulta-promedio-asis');
+  if (avgPercentEl) {
+    const globalPercent = globalTotalSlots > 0 ? Math.round((globalP / globalTotalSlots) * 100) : 100;
+    avgPercentEl.textContent = `${globalPercent}%`;
+  }
+
+  const riskEl = document.getElementById('metric-consulta-en-riesgo');
+  if (riskEl) riskEl.textContent = atRiskCount;
+
+  // Build Table HTML
+  const thead = `
+    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+      <tr>
+        <th class="p-3 sticky left-0 bg-slate-100 z-10">Aprendiz</th>
+        <th class="p-3">Documento</th>
+        ${filteredDates.map(d => {
+          const parts = d.split('-');
+          const shortDate = `${parts[2]}/${parts[1]}`;
+          return `<th class="p-3 text-center min-w-[50px] font-mono text-[11px]">${shortDate}</th>`;
+        }).join('')}
+        <th class="p-3 text-center bg-emerald-50 text-emerald-800">P</th>
+        <th class="p-3 text-center bg-rose-50 text-rose-800">FI</th>
+        <th class="p-3 text-center bg-amber-50 text-amber-800">FJ</th>
+        <th class="p-3 text-center bg-orange-50 text-orange-800">R</th>
+        <th class="p-3 text-center bg-blue-50 text-blue-800">E</th>
+        <th class="p-3 text-center">% Asis</th>
+        <th class="p-3 text-center">Acción</th>
+      </tr>
+    </thead>
+  `;
+
+  if (finalLearners.length === 0) {
+    table.innerHTML = thead + `
+      <tbody>
+        <tr>
+          <td colspan="${10 + filteredDates.length}" class="p-8 text-center text-slate-400 font-semibold">
+            No se encontraron registros de asistencia bajo los filtros seleccionados.
+          </td>
+        </tr>
+      </tbody>
+    `;
+    return;
+  }
+
+  const tbody = finalLearners.map(a => {
+    const dayCells = filteredDates.map(d => {
+      const st = APP_STATE.asistencias[d] ? APP_STATE.asistencias[d][a.documento] : null;
+      let badge = '<span class="text-slate-300 font-bold">-</span>';
+      if (st === 'presente') badge = '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">P</span>';
+      else if (st === 'injustificada') badge = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">FI</span>';
+      else if (st === 'justificada') badge = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">FJ</span>';
+      else if (st === 'retardo') badge = '<span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px]">R</span>';
+      else if (st === 'excusado') badge = '<span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">E</span>';
+
+      return `<td class="p-2.5 text-center">${badge}</td>`;
+    }).join('');
 
     return `
-      <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${hasRisk ? 'bg-rose-50/50' : ''}">
-        <td class="p-3">
-          <div class="font-bold text-slate-900">${a.nombres} ${a.apellidos}</div>
-          <div class="text-[10px] text-slate-500 font-mono">Doc: ${a.documento}</div>
-        </td>
-        <td class="p-3 text-center font-bold text-emerald-700">${p}</td>
-        <td class="p-3 text-center font-bold ${fi > 0 ? 'text-rose-700 bg-rose-100 rounded' : 'text-slate-400'}">${fi}</td>
-        <td class="p-3 text-center font-bold text-amber-700">${fj}</td>
-        <td class="p-3 text-center font-bold text-orange-700">${r}</td>
-        <td class="p-3 text-center font-mono font-black ${percent < 80 ? 'text-rose-600' : 'text-emerald-600'}">${percent}%</td>
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${a.isAtRisk ? 'bg-rose-50/40' : ''}">
+        <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
+        <td class="p-3 font-mono text-slate-600">${a.documento}</td>
+        ${dayCells}
+        <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">${a.p}</td>
+        <td class="p-3 text-center font-bold text-rose-700 bg-rose-50/50">${a.fi}</td>
+        <td class="p-3 text-center font-bold text-amber-700 bg-amber-50/50">${a.fj}</td>
+        <td class="p-3 text-center font-bold text-orange-700 bg-orange-50/50">${a.r}</td>
+        <td class="p-3 text-center font-bold text-blue-700 bg-blue-50/50">${a.e}</td>
+        <td class="p-3 text-center font-mono font-black ${a.percent < 80 ? 'text-rose-600' : 'text-emerald-700'}">${a.percent}%</td>
         <td class="p-3 text-center">
-          ${hasRisk ? `
-            <button onclick="prefillAndOpenLlamado('${a.documento}', 'inasistencia', 'Acumulación de ${fi} inasistencias injustificadas.')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer">
+          ${a.isAtRisk ? `
+            <button onclick="prefillAndOpenLlamado('${a.documento}', 'inasistencia', 'Acumulación de ${a.fi} inasistencias injustificadas.')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer">
               Generar Acta
             </button>
           ` : '<span class="text-slate-400 text-xs">Normal</span>'}
@@ -1249,58 +1663,256 @@ function renderConsultaAsistenciaTable() {
       </tr>
     `;
   }).join('');
-}
-
-function renderConsultaNotasTable() {
-  const table = document.getElementById('table-sabana-notas-full');
-  if (!table) return;
-
-  const raps = [];
-  APP_STATE.competencias.forEach(c => {
-    (c.resultados || []).forEach(r => raps.push({ id: r.id, codigo: r.codigo }));
-  });
-
-  const thead = `
-    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-      <tr>
-        <th class="p-3">Aprendiz</th>
-        <th class="p-3">Documento</th>
-        ${raps.map(r => `<th class="p-3 text-center">${r.codigo}</th>`).join('')}
-        <th class="p-3 text-center">% Avance</th>
-      </tr>
-    </thead>
-  `;
-
-  const tbody = APP_STATE.aprendices.map(a => {
-    let aprobados = 0;
-    const rapTds = raps.map(r => {
-      const key = `${a.documento}_${r.id}`;
-      const isApproved = APP_STATE.calificaciones[key] ? APP_STATE.calificaciones[key].estado === 'aprobado' : true;
-      if (isApproved) aprobados++;
-      return `
-        <td class="p-3 text-center font-bold">
-          <span class="px-2 py-0.5 rounded text-[10px] ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-            ${isApproved ? 'A' : 'D'}
-          </span>
-        </td>
-      `;
-    }).join('');
-
-    const perc = Math.round((aprobados / (raps.length || 1)) * 100);
-
-    return `
-      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-        <td class="p-3 font-bold text-slate-900">${a.nombres} ${a.apellidos}</td>
-        <td class="p-3 font-mono text-slate-600">${a.documento}</td>
-        ${rapTds}
-        <td class="p-3 text-center font-mono font-black text-emerald-700">${perc}%</td>
-      </tr>
-    `;
-  }).join('');
 
   table.innerHTML = thead + `<tbody class="divide-y divide-slate-100">${tbody}</tbody>`;
 }
 
+// =========================================================================
+// 10. VIEW 6: CONSULTA DE NOTAS (3 MODES: RAPs, ACTIVIDADES, BOLETÍN)
+// =========================================================================
+let currentNotasMode = 1;
+
+function setNotasViewMode(mode) {
+  currentNotasMode = mode;
+  for (let i = 1; i <= 3; i++) {
+    const btn = document.getElementById(`btn-notas-mode-${i}`);
+    const container = document.getElementById(`container-notas-mode-${i}`);
+    if (i === mode) {
+      if (btn) btn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer bg-[#002B7F] text-white shadow-xs';
+      if (container) container.classList.remove('hidden');
+    } else {
+      if (btn) btn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:bg-slate-50';
+      if (container) container.classList.add('hidden');
+    }
+  }
+
+  renderConsultaNotasTable();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function filterConsultaNotasView() {
+  renderConsultaNotasTable();
+}
+
+function renderConsultaNotasTable() {
+  const searchQuery = (document.getElementById('input-search-consulta-notas') ? document.getElementById('input-search-consulta-notas').value : '').toLowerCase().trim();
+  const filterState = document.getElementById('select-filter-consulta-notas') ? document.getElementById('select-filter-consulta-notas').value : 'todos';
+
+  const raps = [];
+  APP_STATE.competencias.forEach(c => {
+    (c.resultados || []).forEach(r => raps.push({ id: r.id, codigo: r.codigo, desc: r.descripcion, compCodigo: c.codigo }));
+  });
+
+  let learners = APP_STATE.aprendices.filter(a => {
+    if (searchQuery) {
+      const matchName = `${a.nombres} ${a.apellidos}`.toLowerCase().includes(searchQuery);
+      const matchDoc = a.documento.toLowerCase().includes(searchQuery);
+      if (!matchName && !matchDoc) return false;
+    }
+    return true;
+  });
+
+  // MODE 1: SÁBANA DE RAPs
+  const tableMode1 = document.getElementById('table-sabana-notas-full');
+  if (tableMode1) {
+    const thead = `
+      <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+        <tr>
+          <th class="p-3 sticky left-0 bg-slate-100 z-10">Aprendiz</th>
+          <th class="p-3">Documento</th>
+          ${raps.map(r => `<th class="p-3 text-center" title="[${r.compCodigo}] ${r.desc}">${r.codigo}</th>`).join('')}
+          <th class="p-3 text-center bg-emerald-50 text-emerald-800">% Avance</th>
+          <th class="p-3 text-center">Estado</th>
+        </tr>
+      </thead>
+    `;
+
+    const tbody = learners.map(a => {
+      let aprobados = 0, noAprobados = 0, enBlanco = 0;
+
+      const rapTds = raps.map(r => {
+        const key = `${a.documento}_${r.id}`;
+        const cal = APP_STATE.calificaciones[key];
+        const state = cal ? cal.estado : 'en_blanco';
+
+        let badge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200">-</span>';
+        if (state === 'aprobado') {
+          aprobados++;
+          badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">A</span>';
+        } else if (state === 'no_aprobado') {
+          noAprobados++;
+          badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">NA</span>';
+        } else {
+          enBlanco++;
+        }
+
+        return `<td class="p-3 text-center">${badge}</td>`;
+      }).join('');
+
+      if (filterState === 'aprobados' && noAprobados > 0) return '';
+      if (filterState === 'no_aprobados' && noAprobados === 0) return '';
+      if (filterState === 'en_blanco' && enBlanco === 0) return '';
+
+      const totalRaps = raps.length || 1;
+      const perc = Math.round((aprobados / totalRaps) * 100);
+
+      return `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
+          <td class="p-3 font-mono text-slate-600">${a.documento}</td>
+          ${rapTds}
+          <td class="p-3 text-center font-mono font-black text-emerald-700 bg-emerald-50/40">${perc}%</td>
+          <td class="p-3 text-center">
+            ${noAprobados > 0 ? '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">Con Pendientes</span>' : '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Al Día</span>'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tableMode1.innerHTML = thead + `<tbody class="divide-y divide-slate-100">${tbody}</tbody>`;
+  }
+
+  // MODE 2: POR ACTIVIDADES
+  const tableMode2 = document.getElementById('table-notas-actividades');
+  if (tableMode2) {
+    const thead2 = `
+      <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+        <tr>
+          <th class="p-3 sticky left-0 bg-slate-100 z-10">Aprendiz</th>
+          <th class="p-3">Documento</th>
+          ${APP_STATE.activities.map(act => `
+            <th class="p-3 text-center min-w-[140px]" title="${act.nombre}">
+              <div class="font-mono text-[10px] text-blue-800">${act.codigo}</div>
+              <div class="text-[10px] text-slate-500 font-normal">${act.rapCodigo}</div>
+            </th>
+          `).join('')}
+        </tr>
+      </thead>
+    `;
+
+    const tbody2 = learners.map(a => {
+      const actTds = APP_STATE.activities.map(act => {
+        const key = `${a.documento}_${act.rapCodigo.replace('-', '')}`;
+        const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco' };
+        
+        let label = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100">En Blanco (-)</span>';
+        if (cal.estado === 'aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">Aprobado</span>';
+        else if (cal.estado === 'no_aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">No Aprobado</span>';
+
+        return `<td class="p-3 text-center">${label}</td>`;
+      }).join('');
+
+      return `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
+          <td class="p-3 font-mono text-slate-600">${a.documento}</td>
+          ${actTds}
+        </tr>
+      `;
+    }).join('');
+
+    tableMode2.innerHTML = thead2 + `<tbody class="divide-y divide-slate-100">${tbody2}</tbody>`;
+  }
+
+  // MODE 3: BOLETÍN INDIVIDUAL
+  const selectBoletin = document.getElementById('select-boletin-aprendiz');
+  if (selectBoletin && selectBoletin.options.length === 0) {
+    selectBoletin.innerHTML = APP_STATE.aprendices.map(a => `
+      <option value="${a.documento}">${a.nombres} ${a.apellidos} (${a.documento})</option>
+    `).join('');
+    if (APP_STATE.aprendices[0]) {
+      renderBoletinIndividual(APP_STATE.aprendices[0].documento);
+    }
+  }
+}
+
+function renderBoletinIndividual(documento) {
+  const learner = APP_STATE.aprendices.find(a => a.documento === documento) || APP_STATE.aprendices[0];
+  const container = document.getElementById('card-boletin-individual-content');
+  if (!learner || !container) return;
+
+  const ficha = getCurrentFicha();
+  const raps = [];
+  APP_STATE.competencias.forEach(c => {
+    (c.resultados || []).forEach(r => raps.push({ ...r, compCodigo: c.codigo, compNombre: c.nombre }));
+  });
+
+  let aprobados = 0, noAprobados = 0, enBlanco = 0;
+
+  const rapsRows = raps.map(r => {
+    const key = `${learner.documento}_${r.id}`;
+    const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
+    
+    let badge = '<span class="px-2.5 py-1 bg-slate-100 text-slate-600 font-bold rounded text-xs">Sin Calificar</span>';
+    if (cal.estado === 'aprobado') {
+      aprobados++;
+      badge = '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-black rounded text-xs">APROBADO (A)</span>';
+    } else if (cal.estado === 'no_aprobado') {
+      noAprobados++;
+      badge = '<span class="px-2.5 py-1 bg-rose-100 text-rose-800 font-black rounded text-xs">NO APROBADO (NA)</span>';
+    } else {
+      enBlanco++;
+    }
+
+    return `
+      <tr class="border-b border-slate-100 text-xs">
+        <td class="p-3 font-mono font-bold text-blue-900">${r.codigo}</td>
+        <td class="p-3">
+          <div class="font-semibold text-slate-800">${r.descripcion}</div>
+          <div class="text-[10px] text-slate-500 font-mono">Norma: ${r.compCodigo}</div>
+          ${cal.planRecuperacion ? `<div class="mt-1 text-[11px] text-rose-700 bg-rose-50 p-1.5 rounded font-medium">Plan Concertado: ${cal.planRecuperacion}</div>` : ''}
+        </td>
+        <td class="p-3 text-center">${badge}</td>
+        <td class="p-3 text-slate-600">${cal.feedback || 'Sin observaciones'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const perc = Math.round((aprobados / (raps.length || 1)) * 100);
+
+  container.innerHTML = `
+    <!-- Header Learner Data -->
+    <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="space-y-1 text-center md:text-left">
+        <h4 class="text-base font-bold text-slate-900">${learner.nombres} ${learner.apellidos}</h4>
+        <p class="text-xs text-slate-500">Documento: <strong class="font-mono text-slate-800">${learner.documento}</strong> • Ficha: <span class="font-bold text-blue-900">${ficha.codigo}</span> (${ficha.programa})</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-center p-2.5 bg-white border border-slate-200 rounded-xl shadow-2xs">
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Avance Académico</span>
+          <span class="text-lg font-black text-emerald-700 font-mono">${perc}%</span>
+        </div>
+        <button onclick="window.print()" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Imprimir Boletín</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Table of Results -->
+    <div class="overflow-x-auto border border-slate-200 rounded-2xl overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-100 text-slate-700 font-bold text-xs border-b border-slate-200">
+          <tr>
+            <th class="p-3 w-20">RAP</th>
+            <th class="p-3">Resultado de Aprendizaje / Evidencia</th>
+            <th class="p-3 text-center w-36">Juicio Evaluativo</th>
+            <th class="p-3">Retroalimentación del Instructor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          ${rapsRows}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// =========================================================================
+// 11. VIEW 7: LLAMADOS DE ATENCIÓN & ACTAS DISCIPLINARIAS
+// =========================================================================
 function renderLlamadosCards() {
   const container = document.getElementById('container-llamados-cards');
   if (!container) return;
@@ -1310,7 +1922,7 @@ function renderLlamadosCards() {
       <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-400">
         <i data-lucide="shield-check" class="w-10 h-10 mx-auto mb-2 text-emerald-500"></i>
         <p class="font-bold text-sm text-slate-700">No hay llamados de atención registrados</p>
-        <span class="text-xs text-slate-500">Todos los aprendices cumplen con la asistencia y compromisos.</span>
+        <span class="text-xs text-slate-500">Todos los aprendices cumplen satisfactoriamente con la asistencia y compromisos.</span>
       </div>
     `;
     return;
@@ -1330,7 +1942,7 @@ function renderLlamadosCards() {
         <span class="text-[11px] text-slate-400 block">Fecha: ${l.fecha} • Tipo: ${l.tipo}</span>
       </div>
 
-      <button onclick="openPrintableActaModal('${l.id}')" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs cursor-pointer shrink-0">
+      <button onclick="openPrintableActaModal('${l.id}')" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer shrink-0">
         <i data-lucide="printer" class="w-4 h-4"></i>
         <span>Ver / Imprimir Acta Oficial</span>
       </button>
@@ -1338,11 +1950,87 @@ function renderLlamadosCards() {
   `).join('');
 }
 
+function prefillAndOpenLlamado(doc, tipo, motivo) {
+  const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
+  selLearner.innerHTML = APP_STATE.aprendices.map(a => `
+    <option value="${a.documento}" ${a.documento === doc ? 'selected' : ''}>
+      ${a.nombres} ${a.apellidos} (${a.documento})
+    </option>
+  `).join('');
+
+  document.getElementById('select-nuevo-llamado-tipo').value = tipo;
+  document.getElementById('input-nuevo-llamado-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('input-nuevo-llamado-motivo').value = motivo;
+  document.getElementById('input-nuevo-llamado-compromiso').value = 'El aprendiz se compromete a no reincidir en inasistencias y presentar oportunamente las evidencias formativas pendientes.';
+
+  openModal('modal-nuevo-llamado');
+}
+
+async function submitNuevoLlamado() {
+  const doc = document.getElementById('select-nuevo-llamado-aprendiz').value;
+  const learner = APP_STATE.aprendices.find(a => a.documento === doc);
+  const tipo = document.getElementById('select-nuevo-llamado-tipo').value;
+  const fecha = document.getElementById('input-nuevo-llamado-fecha').value;
+  const motivo = document.getElementById('input-nuevo-llamado-motivo').value;
+  const compromiso = document.getElementById('input-nuevo-llamado-compromiso').value;
+
+  const nuevo = {
+    id: `llamado_${Date.now()}`,
+    numeroActa: `ACTA-${new Date().getFullYear()}-00${APP_STATE.llamados.length + 1}`,
+    aprendizDocumento: doc,
+    aprendizNombre: learner ? `${learner.nombres} ${learner.apellidos}` : 'Aprendiz SENA',
+    tipo: tipo,
+    fecha: fecha,
+    motivo: motivo,
+    compromiso: compromiso
+  };
+
+  APP_STATE.llamados.unshift(nuevo);
+  saveToLocalStorage();
+  renderLlamadosCards();
+  renderSidebar();
+  closeModal('modal-nuevo-llamado');
+
+  if (supabaseClient) {
+    await supabaseClient.from('llamados_atencion').insert({
+      numero_acta: nuevo.numeroActa,
+      aprendiz_documento: nuevo.aprendizDocumento,
+      aprendiz_nombre: nuevo.aprendizNombre,
+      tipo: nuevo.tipo,
+      fecha: nuevo.fecha,
+      motivo: nuevo.motivo,
+      compromiso: nuevo.compromiso
+    });
+  }
+
+  openPrintableActaModal(nuevo.id);
+}
+
+function openPrintableActaModal(id) {
+  const l = APP_STATE.llamados.find(item => item.id === id);
+  if (!l) return;
+
+  const ficha = getCurrentFicha();
+  document.getElementById('acta-doc-numero').textContent = l.numeroActa;
+  document.getElementById('acta-doc-fecha').textContent = l.fecha;
+  document.getElementById('acta-doc-aprendiz').textContent = l.aprendizNombre;
+  document.getElementById('acta-doc-documento').textContent = l.aprendizDocumento;
+  document.getElementById('acta-doc-ficha').textContent = `${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
+  document.getElementById('acta-doc-tipo').textContent = l.tipo === 'inasistencia' ? 'Inasistencia Injustificada (3 Faltas)' : 'Compromiso Académico';
+  document.getElementById('acta-doc-motivo').textContent = l.motivo;
+  document.getElementById('acta-doc-compromiso').textContent = l.compromiso;
+  document.getElementById('acta-doc-firma-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+
+  openModal('modal-acta-pdf');
+}
+
+// =========================================================================
+// 12. VIEW 8: VISTA APRENDIZ & STORAGE PHOTO ENGINE
+// =========================================================================
 function renderLearnerPortal() {
   const learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc) || APP_STATE.aprendices[0];
   if (!learner) return;
 
-  // Learner Select Dropdown
   const selLearner = document.getElementById('select-active-learner-view');
   if (selLearner) {
     selLearner.innerHTML = APP_STATE.aprendices.map(a => `
@@ -1358,7 +2046,6 @@ function renderLearnerPortal() {
   document.getElementById('portal-aprendiz-email').textContent = learner.correo;
   document.getElementById('portal-aprendiz-ficha-badge').textContent = `Ficha ${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
 
-  // Avatar Photo
   const avatar = document.getElementById('portal-aprendiz-avatar');
   if (avatar) {
     if (learner.foto) {
@@ -1368,7 +2055,7 @@ function renderLearnerPortal() {
     }
   }
 
-  // Attendance Metrics
+  // Metrics
   const dates = Object.keys(APP_STATE.asistencias);
   let p = 0, fi = 0, fj = 0;
   dates.forEach(d => {
@@ -1397,16 +2084,20 @@ function renderLearnerPortal() {
 
     rapsList.innerHTML = raps.map(r => {
       const key = `${learner.documento}_${r.id}`;
-      const isApproved = APP_STATE.calificaciones[key] ? APP_STATE.calificaciones[key].estado === 'aprobado' : true;
+      const cal = APP_STATE.calificaciones[key];
+      const state = cal ? cal.estado : 'en_blanco';
+
+      let badge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-bold text-slate-500 bg-slate-100">En Blanco</span>';
+      if (state === 'aprobado') badge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">Aprobado</span>';
+      else if (state === 'no_aprobado') badge = '<span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-rose-100 text-rose-800">No Aprobado</span>';
+
       return `
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
           <div>
             <strong class="text-xs text-slate-800 block">[${r.codigo}] ${r.descripcion.substring(0, 42)}...</strong>
             <span class="text-[10px] text-slate-500">Norma: ${r.compCodigo}</span>
           </div>
-          <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase ${isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-            ${isApproved ? 'Aprobado' : 'No Aprobado'}
-          </span>
+          ${badge}
         </div>
       `;
     }).join('');
@@ -1418,9 +2109,6 @@ function changeLearnerPortalView(doc) {
   renderLearnerPortal();
 }
 
-// =========================================================================
-// 7. PHOTO STORAGE UPLOADS (SUPABASE BUCKET 'perfiles')
-// =========================================================================
 async function handleLearnerPhotoUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1435,7 +2123,6 @@ async function handleLearnerPhotoUpload(e) {
     if (idx !== -1) {
       APP_STATE.aprendices[idx].foto = res.url;
       
-      // Update in Supabase Database as well
       if (supabaseClient) {
         await supabaseClient.from('aprendices').update({ foto: res.url }).eq('documento', APP_STATE.currentUserDoc);
       }
@@ -1515,7 +2202,7 @@ async function saveInstructorProfileData() {
 }
 
 // =========================================================================
-// 8. EXCEL IMPORT / EXPORT (SHEETJS)
+// 13. EXCEL IMPORT / EXPORT (SHEETJS ENGINE)
 // =========================================================================
 function handleExcelFileUpload(event) {
   const file = event.target.files[0];
@@ -1556,7 +2243,6 @@ function handleExcelFileUpload(event) {
         saveToLocalStorage();
         renderAllViews();
         
-        // Auto-save to Supabase
         await syncDataToSupabase();
         alert(`¡Carga masiva completada! Se registraron ${parsedAprendices.length} aprendices en el sistema.`);
       }
@@ -1582,13 +2268,34 @@ function downloadExcelTemplate() {
 function exportAttendanceToExcel() {
   if (typeof XLSX === 'undefined') return;
   const ficha = getCurrentFicha();
+  
+  // Only export days that actually have attendance records
+  const validDates = Object.keys(APP_STATE.asistencias).filter(d => Object.keys(APP_STATE.asistencias[d]).length > 0).sort();
+
   const rows = APP_STATE.aprendices.map(a => {
     const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
-    Object.keys(APP_STATE.asistencias).forEach(d => {
-      row[d] = APP_STATE.asistencias[d][a.documento] || 'P';
+    let p = 0, fi = 0, fj = 0, r = 0, e = 0;
+    
+    validDates.forEach(d => {
+      const st = APP_STATE.asistencias[d][a.documento] || 'presente';
+      row[d] = st === 'presente' ? 'P' : (st === 'injustificada' ? 'FI' : (st === 'justificada' ? 'FJ' : (st === 'retardo' ? 'R' : 'E')));
+      if (st === 'presente') p++;
+      else if (st === 'injustificada') fi++;
+      else if (st === 'justificada') fj++;
+      else if (st === 'retardo') r++;
+      else if (st === 'excusado') e++;
     });
+
+    row['Total P'] = p;
+    row['Total FI'] = fi;
+    row['Total FJ'] = fj;
+    row['Total R'] = r;
+    row['Total E'] = e;
+    row['% Asistencia'] = `${Math.round((p / (validDates.length || 1)) * 100)}%`;
+
     return row;
   });
+
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Asistencia');
@@ -1600,96 +2307,23 @@ function exportNotasToExcel() {
   const ficha = getCurrentFicha();
   const rows = APP_STATE.aprendices.map(a => {
     const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
+    let aprobados = 0, total = 0;
     APP_STATE.competencias.forEach(c => {
       (c.resultados || []).forEach(r => {
+        total++;
         const cal = APP_STATE.calificaciones[`${a.documento}_${r.id}`];
-        row[`${c.codigo}_${r.codigo}`] = cal ? (cal.estado === 'aprobado' ? 'A' : 'D') : 'A';
+        const st = cal ? cal.estado : 'en_blanco';
+        row[`${c.codigo}_${r.codigo}`] = st === 'aprobado' ? 'A' : (st === 'no_aprobado' ? 'NA' : '-');
+        if (st === 'aprobado') aprobados++;
       });
     });
+    row['% Aprobación'] = `${Math.round((aprobados / (total || 1)) * 100)}%`;
     return row;
   });
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'SabanaNotas');
   XLSX.writeFile(wb, `Sabana_Notas_Ficha_${ficha.codigo}.xlsx`);
-}
-
-// =========================================================================
-// 9. DISCIPLINARY ACTS (LLAMADOS DE ATENCION)
-// =========================================================================
-function prefillAndOpenLlamado(doc, tipo, motivo) {
-  const selLearner = document.getElementById('select-nuevo-llamado-aprendiz');
-  selLearner.innerHTML = APP_STATE.aprendices.map(a => `
-    <option value="${a.documento}" ${a.documento === doc ? 'selected' : ''}>
-      ${a.nombres} ${a.apellidos} (${a.documento})
-    </option>
-  `).join('');
-
-  document.getElementById('select-nuevo-llamado-tipo').value = tipo;
-  document.getElementById('input-nuevo-llamado-fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('input-nuevo-llamado-motivo').value = motivo;
-  document.getElementById('input-nuevo-llamado-compromiso').value = 'El aprendiz se compromete a no reincidir en inasistencias y presentar oportunamente las evidencias formativas.';
-
-  openModal('modal-nuevo-llamado');
-}
-
-async function submitNuevoLlamado() {
-  const doc = document.getElementById('select-nuevo-llamado-aprendiz').value;
-  const learner = APP_STATE.aprendices.find(a => a.documento === doc);
-  const tipo = document.getElementById('select-nuevo-llamado-tipo').value;
-  const fecha = document.getElementById('input-nuevo-llamado-fecha').value;
-  const motivo = document.getElementById('input-nuevo-llamado-motivo').value;
-  const compromiso = document.getElementById('input-nuevo-llamado-compromiso').value;
-
-  const nuevo = {
-    id: `llamado_${Date.now()}`,
-    numeroActa: `ACTA-${new Date().getFullYear()}-00${APP_STATE.llamados.length + 1}`,
-    aprendizDocumento: doc,
-    aprendizNombre: learner ? `${learner.nombres} ${learner.apellidos}` : 'Aprendiz SENA',
-    tipo: tipo,
-    fecha: fecha,
-    motivo: motivo,
-    compromiso: compromiso
-  };
-
-  APP_STATE.llamados.unshift(nuevo);
-  saveToLocalStorage();
-  renderLlamadosCards();
-  renderSidebar();
-  closeModal('modal-nuevo-llamado');
-
-  // Sync to Supabase
-  if (supabaseClient) {
-    await supabaseClient.from('llamados_atencion').insert({
-      numero_acta: nuevo.numeroActa,
-      aprendiz_documento: nuevo.aprendizDocumento,
-      aprendiz_nombre: nuevo.aprendizNombre,
-      tipo: nuevo.tipo,
-      fecha: nuevo.fecha,
-      motivo: nuevo.motivo,
-      compromiso: nuevo.compromiso
-    });
-  }
-
-  openPrintableActaModal(nuevo.id);
-}
-
-function openPrintableActaModal(id) {
-  const l = APP_STATE.llamados.find(item => item.id === id);
-  if (!l) return;
-
-  const ficha = getCurrentFicha();
-  document.getElementById('acta-doc-numero').textContent = l.numeroActa;
-  document.getElementById('acta-doc-fecha').textContent = l.fecha;
-  document.getElementById('acta-doc-aprendiz').textContent = l.aprendizNombre;
-  document.getElementById('acta-doc-documento').textContent = l.aprendizDocumento;
-  document.getElementById('acta-doc-ficha').textContent = `${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
-  document.getElementById('acta-doc-tipo').textContent = l.tipo === 'inasistencia' ? 'Inasistencia Injustificada (3 Faltas)' : 'Compromiso Académico';
-  document.getElementById('acta-doc-motivo').textContent = l.motivo;
-  document.getElementById('acta-doc-compromiso').textContent = l.compromiso;
-  document.getElementById('acta-doc-firma-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
-
-  openModal('modal-acta-pdf');
 }
 
 function copySqlScript() {
@@ -1699,12 +2333,11 @@ function copySqlScript() {
 }
 
 // =========================================================================
-// 10. INITIALIZATION AT DOM CONTENT LOADED
+// 14. INITIALIZATION AT DOM CONTENT LOADED
 // =========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   loadFromLocalStorage();
 
-  // Check login state: Default is login screen
   const isLogged = localStorage.getItem('academix_logged_in') === 'true';
   if (isLogged) {
     APP_STATE.isLoggedIn = true;
@@ -1716,7 +2349,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectLoginRole('instructor');
   }
 
-  // Fetch real data from Supabase immediately
   await fetchRealDataFromSupabase();
   renderAllViews();
 });
