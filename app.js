@@ -94,8 +94,10 @@ const DEFAULT_ACTIVITIES = [
 
 // Initial Apprentice Seed
 const SEED_APRENDICES = [
+  // Ficha 2694110 (ADSO Tarde)
   {
     id: 'ap_1',
+    fichaCodigo: '2694110',
     tipoDoc: 'CC',
     documento: '1001234567',
     nombres: 'Carlos Andrés',
@@ -110,6 +112,7 @@ const SEED_APRENDICES = [
   },
   {
     id: 'ap_2',
+    fichaCodigo: '2694110',
     tipoDoc: 'TI',
     documento: '1002345678',
     nombres: 'Ana María',
@@ -124,6 +127,7 @@ const SEED_APRENDICES = [
   },
   {
     id: 'ap_3',
+    fichaCodigo: '2694110',
     tipoDoc: 'CC',
     documento: '1003456789',
     nombres: 'Juan David',
@@ -138,6 +142,7 @@ const SEED_APRENDICES = [
   },
   {
     id: 'ap_4',
+    fichaCodigo: '2694110',
     tipoDoc: 'CC',
     documento: '1004567890',
     nombres: 'Luisa Fernanda',
@@ -152,6 +157,7 @@ const SEED_APRENDICES = [
   },
   {
     id: 'ap_5',
+    fichaCodigo: '2694110',
     tipoDoc: 'CC',
     documento: '1005678901',
     nombres: 'Santiago',
@@ -163,6 +169,83 @@ const SEED_APRENDICES = [
     foto: '',
     rachaAsistencia: 88,
     fallasConsecutivas: 0
+  },
+  // Ficha 2718902 (ADSO Mañana)
+  {
+    id: 'ap_6',
+    fichaCodigo: '2718902',
+    tipoDoc: 'CC',
+    documento: '1094837261',
+    nombres: 'Laura Marcela',
+    apellidos: 'Castaño Duque',
+    correo: 'laura.castano@misena.edu.co',
+    usuario: '1094837261',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  },
+  {
+    id: 'ap_7',
+    fichaCodigo: '2718902',
+    tipoDoc: 'CC',
+    documento: '1088321984',
+    nombres: 'Mateo Alejandro',
+    apellidos: 'Morales Ríos',
+    correo: 'mateo.morales@misena.edu.co',
+    usuario: '1088321984',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 92,
+    fallasConsecutivas: 1
+  },
+  {
+    id: 'ap_8',
+    fichaCodigo: '2718902',
+    tipoDoc: 'TI',
+    documento: '1077432891',
+    nombres: 'Valentina',
+    apellidos: 'Osorio Betancur',
+    correo: 'valentina.osorio@misena.edu.co',
+    usuario: '1077432891',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  },
+  // Ficha 2540193 (Animación 3D)
+  {
+    id: 'ap_9',
+    fichaCodigo: '2540193',
+    tipoDoc: 'CC',
+    documento: '1066543210',
+    nombres: 'Daniel Esteban',
+    apellidos: 'Torres Salazar',
+    correo: 'daniel.torres@misena.edu.co',
+    usuario: '1066543210',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 100,
+    fallasConsecutivas: 0
+  },
+  {
+    id: 'ap_10',
+    fichaCodigo: '2540193',
+    tipoDoc: 'CC',
+    documento: '1055432109',
+    nombres: 'Natalia Andrea',
+    apellidos: 'Ruiz Cardona',
+    correo: 'natalia.ruiz@misena.edu.co',
+    usuario: '1055432109',
+    password: 'password123',
+    estado: 'En Formación',
+    foto: '',
+    rachaAsistencia: 90,
+    fallasConsecutivas: 0
   }
 ];
 
@@ -173,40 +256,56 @@ const SEED_ASISTENCIAS = {
     '1002345678': 'presente',
     '1003456789': 'injustificada',
     '1004567890': 'presente',
-    '1005678901': 'presente'
+    '1005678901': 'presente',
+    '1094837261': 'presente',
+    '1088321984': 'presente',
+    '1077432891': 'presente'
   },
   '2026-09-15': {
     '1001234567': 'presente',
     '1002345678': 'retardo',
     '1003456789': 'injustificada',
     '1004567890': 'presente',
-    '1005678901': 'presente'
+    '1005678901': 'presente',
+    '1094837261': 'presente',
+    '1088321984': 'retardo',
+    '1077432891': 'presente'
   },
   '2026-09-16': {
     '1001234567': 'presente',
     '1002345678': 'presente',
     '1003456789': 'injustificada',
     '1004567890': 'presente',
-    '1005678901': 'justificada'
+    '1005678901': 'justificada',
+    '1094837261': 'presente',
+    '1088321984': 'presente',
+    '1077432891': 'presente'
   },
   '2026-09-17': {
     '1001234567': 'presente',
     '1002345678': 'presente',
     '1003456789': 'presente',
     '1004567890': 'presente',
-    '1005678901': 'presente'
+    '1005678901': 'presente',
+    '1094837261': 'presente',
+    '1088321984': 'presente',
+    '1077432891': 'presente'
   },
   '2026-09-18': {
     '1001234567': 'presente',
     '1002345678': 'presente',
     '1003456789': 'retardo',
     '1004567890': 'presente',
-    '1005678901': 'presente'
+    '1005678901': 'presente',
+    '1094837261': 'presente',
+    '1088321984': 'presente',
+    '1077432891': 'presente'
   }
 };
 
 // Seed Grades (A, NA, or en_blanco)
 const SEED_CALIFICACIONES = {
+  // Ficha 2694110
   '1001234567_RAP1': { estado: 'aprobado', feedback: 'Excelente diseño del modelo relacional.' },
   '1001234567_RAP2': { estado: 'aprobado', feedback: 'Consultas SQL bien optimizadas.' },
   '1001234567_RAP3': { estado: 'aprobado', feedback: 'Maquetación responsive completa.' },
@@ -230,7 +329,23 @@ const SEED_CALIFICACIONES = {
   '1005678901_RAP1': { estado: 'aprobado', feedback: 'Aprobado satisfactoriamente.' },
   '1005678901_RAP2': { estado: 'en_blanco', feedback: '' },
   '1005678901_RAP3': { estado: 'aprobado', feedback: 'Aprobado.' },
-  '1005678901_RAP4': { estado: 'en_blanco', feedback: '' }
+  '1005678901_RAP4': { estado: 'en_blanco', feedback: '' },
+
+  // Ficha 2718902
+  '1094837261_RAP1': { estado: 'aprobado', feedback: 'Excelente estructura relacional.' },
+  '1094837261_RAP2': { estado: 'aprobado', feedback: 'Modelado DDL impecable.' },
+  '1094837261_RAP3': { estado: 'aprobado', feedback: 'Maquetación UI interactiva.' },
+  '1094837261_RAP4': { estado: 'aprobado', feedback: 'Consumo de REST API completado.' },
+
+  '1088321984_RAP1': { estado: 'aprobado', feedback: 'Cumple con los requisitos mínimos.' },
+  '1088321984_RAP2': { estado: 'en_blanco', feedback: '' },
+  '1088321984_RAP3': { estado: 'no_aprobado', feedback: 'Inconsistencias en tipografía y colores.', planRecuperacion: 'Reentregar prototipo corregido.' },
+  '1088321984_RAP4': { estado: 'en_blanco', feedback: '' },
+
+  '1077432891_RAP1': { estado: 'aprobado', feedback: 'Buen desempeño general.' },
+  '1077432891_RAP2': { estado: 'aprobado', feedback: 'Aprobado.' },
+  '1077432891_RAP3': { estado: 'en_blanco', feedback: '' },
+  '1077432891_RAP4': { estado: 'en_blanco', feedback: '' }
 };
 
 // Seed Disciplinary Notices
@@ -759,6 +874,19 @@ function getCurrentFicha() {
   return APP_STATE.fichas.find(f => f.codigo === APP_STATE.currentFichaCodigo) || APP_STATE.fichas[0];
 }
 
+function getAprendicesForFicha(fichaCodigo) {
+  const targetCodigo = fichaCodigo || APP_STATE.currentFichaCodigo;
+  return APP_STATE.aprendices.filter(a => {
+    if (!a.fichaCodigo) return targetCodigo === '2694110';
+    return a.fichaCodigo === targetCodigo;
+  });
+}
+
+function getCompetenciasForFicha(fichaCodigo) {
+  const targetCodigo = fichaCodigo || APP_STATE.currentFichaCodigo;
+  return APP_STATE.competencias.filter(c => !c.fichaCodigo || c.fichaCodigo === targetCodigo);
+}
+
 function toggleFichaDropdown() {
   const d = document.getElementById('dropdown-fichas-menu');
   d.classList.toggle('hidden');
@@ -965,6 +1093,7 @@ function deleteCompetencia(codigo) {
 // 5.3 AGREGAR APRENDIZ INDIVIDUAL
 async function handleCreateIndividualLearner(event) {
   event.preventDefault();
+  const currentFicha = getCurrentFicha();
   const tipoDoc = document.getElementById('form-indiv-tipodoc').value;
   const doc = document.getElementById('form-indiv-doc').value.trim();
   const nombres = document.getElementById('form-indiv-nombres').value.trim();
@@ -979,6 +1108,7 @@ async function handleCreateIndividualLearner(event) {
   const existingIdx = APP_STATE.aprendices.findIndex(a => a.documento === doc);
   const learnerObj = {
     id: `ap_${Date.now()}`,
+    fichaCodigo: currentFicha.codigo,
     tipoDoc: tipoDoc,
     documento: doc,
     nombres: nombres,
@@ -1007,7 +1137,6 @@ async function handleCreateIndividualLearner(event) {
   document.getElementById('form-indiv-email').value = '';
 
   if (supabaseClient) {
-    const ficha = getCurrentFicha();
     await supabaseClient.from('aprendices').upsert({
       documento: doc,
       nombres: nombres,
@@ -1016,11 +1145,11 @@ async function handleCreateIndividualLearner(event) {
       usuario: doc,
       password: doc,
       estado_matricula: 'En Formación',
-      ficha_codigo: ficha.codigo
+      ficha_codigo: currentFicha.codigo
     }, { onConflict: 'documento' });
   }
 
-  alert(`¡Aprendiz ${nombres} ${apellidos} registrado exitosamente!`);
+  alert(`¡Aprendiz ${nombres} ${apellidos} registrado exitosamente en la Ficha ${currentFicha.codigo}!`);
 }
 
 function deleteLearner(documento) {
@@ -1083,7 +1212,7 @@ function renderTopNavigation() {
   
   const navFicha = document.getElementById('nav-active-ficha-label');
   if (navFicha) {
-    navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : 'ADSO'}`;
+    navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : (ficha.jornada.includes('Mañana') ? 'ADSO Mañana' : 'ADSO')}`;
   }
 
   const listFichas = document.getElementById('list-dropdown-fichas');
@@ -1095,6 +1224,17 @@ function renderTopNavigation() {
       </button>
     `).join('');
   }
+
+  // Synchronize any in-view ficha selector elements
+  ['select-asistencia-ficha', 'select-calificaciones-ficha', 'select-consulta-asistencia-ficha', 'select-consulta-notas-ficha'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) {
+      sel.innerHTML = APP_STATE.fichas.map(f => `
+        <option value="${f.codigo}" ${f.codigo === ficha.codigo ? 'selected' : ''}>${f.codigo} • ${f.programa.substring(0, 32)} (${f.jornada.split(' ')[0]})</option>
+      `).join('');
+      sel.value = ficha.codigo;
+    }
+  });
 
   document.getElementById('nav-user-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
   document.getElementById('menu-user-fullname').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
@@ -1125,9 +1265,11 @@ function renderSidebar() {
 
 function renderPanelGeneral() {
   const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
   
   document.getElementById('panel-ficha-badge').textContent = `${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
-  document.getElementById('panel-aprendices-count').textContent = APP_STATE.aprendices.length;
+  document.getElementById('panel-aprendices-count').textContent = fichaAprendices.length;
   
   document.getElementById('panel-banner-codigo').textContent = `Ficha ${ficha.codigo}`;
   document.getElementById('panel-banner-jornada').textContent = ficha.jornada;
@@ -1136,13 +1278,13 @@ function renderPanelGeneral() {
   document.getElementById('panel-banner-ambiente').textContent = ficha.ambiente;
   document.getElementById('panel-banner-instructor').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
 
-  document.getElementById('stat-total-aprendices').textContent = APP_STATE.aprendices.length;
-  document.getElementById('stat-total-competencias').textContent = APP_STATE.competencias.length;
+  document.getElementById('stat-total-aprendices').textContent = fichaAprendices.length;
+  document.getElementById('stat-total-competencias').textContent = fichaCompetencias.length;
   document.getElementById('stat-total-llamados').textContent = APP_STATE.llamados.length;
 
   const compGrid = document.getElementById('panel-competencias-grid');
   if (compGrid) {
-    compGrid.innerHTML = APP_STATE.competencias.map(c => `
+    compGrid.innerHTML = fichaCompetencias.map(c => `
       <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
         <div class="flex items-center justify-between">
           <span class="font-mono font-bold text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded">
@@ -1166,6 +1308,8 @@ function renderPanelGeneral() {
 
 function renderCargarInfo() {
   const currentFicha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(currentFicha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(currentFicha.codigo);
 
   // 1. Render Fichas Cards (Sub-tab 1)
   const badgeFichas = document.getElementById('badge-total-fichas');
@@ -1175,6 +1319,7 @@ function renderCargarInfo() {
   if (listFichasCards) {
     listFichasCards.innerHTML = APP_STATE.fichas.map(f => {
       const isActive = f.codigo === currentFicha.codigo;
+      const count = getAprendicesForFicha(f.codigo).length;
       return `
         <div class="p-4 rounded-xl border transition ${isActive ? 'bg-blue-50/70 border-blue-300 ring-2 ring-[#002B7F]/20' : 'bg-slate-50 border-slate-200'} flex items-center justify-between gap-4">
           <div class="space-y-1">
@@ -1188,6 +1333,7 @@ function renderCargarInfo() {
             <div class="text-xs text-slate-600 flex flex-wrap gap-x-4">
               <span><strong>Jornada:</strong> ${f.jornada}</span>
               <span><strong>Ambiente:</strong> ${f.ambiente}</span>
+              <span><strong>Aprendices:</strong> <span class="font-bold text-[#002B7F]">${count}</span></span>
             </div>
           </div>
 
@@ -1208,11 +1354,11 @@ function renderCargarInfo() {
 
   // 2. Render Competencias Cards (Sub-tab 2)
   const badgeComp = document.getElementById('badge-total-competencias');
-  if (badgeComp) badgeComp.textContent = `${APP_STATE.competencias.length} Competencias`;
+  if (badgeComp) badgeComp.textContent = `${fichaCompetencias.length} Competencias`;
 
   const listCompCards = document.getElementById('list-competencias-cards');
   if (listCompCards) {
-    listCompCards.innerHTML = APP_STATE.competencias.map(c => `
+    listCompCards.innerHTML = fichaCompetencias.map(c => `
       <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -1240,22 +1386,23 @@ function renderCargarInfo() {
   }
 
   // 3. Render Aprendices Table (Sub-tab 3)
-  document.getElementById('badge-cargar-count').textContent = `${APP_STATE.aprendices.length} Aprendices`;
+  const badgeCargar = document.getElementById('badge-cargar-count');
+  if (badgeCargar) badgeCargar.textContent = `${fichaAprendices.length} Aprendices`;
   const tbody = document.getElementById('tbody-cargar-aprendices');
   if (!tbody) return;
 
-  if (APP_STATE.aprendices.length === 0) {
+  if (fichaAprendices.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="p-8 text-center text-slate-400 font-semibold">
-          No hay aprendices registrados. Carga un archivo Excel o registra uno individualmente.
+          No hay aprendices registrados para la ficha <strong>${currentFicha.codigo}</strong>. Carga un archivo Excel o registra uno individualmente arriba.
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => `
+  tbody.innerHTML = fichaAprendices.map((a, i) => `
     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
       <td class="p-3 font-mono font-bold text-slate-400">${i + 1}</td>
       <td class="p-3 font-mono font-bold text-slate-900">${a.documento}</td>
@@ -1285,6 +1432,9 @@ function renderCargarInfo() {
 // 7. VIEW 3: TOMA DE ASISTENCIA
 // =========================================================================
 function renderAttendanceTable() {
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+
   const dateInput = document.getElementById('input-asistencia-date');
   if (dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().split('T')[0];
@@ -1293,7 +1443,7 @@ function renderAttendanceTable() {
   const dayRecord = APP_STATE.asistencias[curDate] || {};
 
   let countP = 0, countFI = 0, countFJ = 0, countR = 0, countE = 0;
-  APP_STATE.aprendices.forEach(a => {
+  fichaAprendices.forEach(a => {
     const st = dayRecord[a.documento] || 'presente';
     if (st === 'presente') countP++;
     else if (st === 'injustificada') countFI++;
@@ -1316,7 +1466,18 @@ function renderAttendanceTable() {
   const tbody = document.getElementById('tbody-asistencia-list');
   if (!tbody) return;
 
-  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
+  if (fichaAprendices.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="p-8 text-center text-slate-400 font-semibold">
+          No hay aprendices registrados en la Ficha <strong>${ficha.codigo}</strong>. Carga aprendices en el módulo "Cargar Información".
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = fichaAprendices.map((a, i) => {
     const estado = dayRecord[a.documento] || 'presente';
 
     // Calculate historical unjustified absences for risk badge
@@ -1369,9 +1530,11 @@ function setLearnerAttendance(doc, estado) {
 }
 
 function markAllAttendance(estado) {
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
   const curDate = document.getElementById('input-asistencia-date').value;
   if (!APP_STATE.asistencias[curDate]) APP_STATE.asistencias[curDate] = {};
-  APP_STATE.aprendices.forEach(a => {
+  fichaAprendices.forEach(a => {
     APP_STATE.asistencias[curDate][a.documento] = estado;
   });
   saveToLocalStorage();
@@ -1388,14 +1551,20 @@ function saveAttendanceRecord() {
 // 8. VIEW 4: REGISTRO DE CALIFICACIONES (JUICIOS RAPs)
 // =========================================================================
 function renderCalificacionesTable() {
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
+
   const selectRap = document.getElementById('select-calificaciones-rap');
   if (selectRap) {
     const raps = [];
-    APP_STATE.competencias.forEach(c => {
+    fichaCompetencias.forEach(c => {
       (c.resultados || []).forEach(r => raps.push({ id: r.id, label: `[${c.codigo}] ${r.codigo} - ${r.descripcion.substring(0, 60)}...` }));
     });
-    if (raps.length > 0 && selectRap.options.length === 0) {
-      selectRap.innerHTML = raps.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
+    const currentVal = selectRap.value;
+    selectRap.innerHTML = raps.map(r => `<option value="${r.id}" ${r.id === currentVal ? 'selected' : ''}>${r.label}</option>`).join('');
+    if (!raps.some(r => r.id === selectRap.value) && raps.length > 0) {
+      selectRap.value = raps[0].id;
     }
   }
 
@@ -1403,9 +1572,22 @@ function renderCalificacionesTable() {
   const tbody = document.getElementById('tbody-calificaciones-list');
   if (!tbody) return;
 
+  if (fichaAprendices.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="p-8 text-center text-slate-400 font-semibold">
+          No hay aprendices registrados en la Ficha <strong>${ficha.codigo}</strong>.
+        </td>
+      </tr>
+    `;
+    const summary = document.getElementById('calificaciones-summary-badge');
+    if (summary) summary.innerHTML = `<span class="text-slate-500 font-bold">0 Aprendices</span>`;
+    return;
+  }
+
   let approvedCount = 0, noApprovedCount = 0, blankCount = 0;
 
-  tbody.innerHTML = APP_STATE.aprendices.map((a, i) => {
+  tbody.innerHTML = fichaAprendices.map((a, i) => {
     const key = `${a.documento}_${selectedRap}`;
     const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
     
@@ -1454,10 +1636,12 @@ function setLearnerCalificacion(doc, rapId, estado) {
 }
 
 function markAllCalificaciones(estado) {
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
   const selectRap = document.getElementById('select-calificaciones-rap');
   const selectedRap = selectRap && selectRap.value ? selectRap.value : 'RAP1';
 
-  APP_STATE.aprendices.forEach(a => {
+  fichaAprendices.forEach(a => {
     const key = `${a.documento}_${selectedRap}`;
     if (!APP_STATE.calificaciones[key]) APP_STATE.calificaciones[key] = { estado: 'en_blanco', feedback: '', planRecuperacion: '' };
     APP_STATE.calificaciones[key].estado = estado;
@@ -1521,6 +1705,9 @@ function renderConsultaAsistenciaTable() {
   const table = document.getElementById('table-consulta-asistencia-matrix');
   if (!table) return;
 
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+
   const searchQuery = (document.getElementById('input-search-consulta-asis') ? document.getElementById('input-search-consulta-asis').value : '').toLowerCase().trim();
   const filterState = document.getElementById('select-filter-consulta-asis') ? document.getElementById('select-filter-consulta-asis').value : 'todos';
   const desde = document.getElementById('input-consulta-asis-desde') ? document.getElementById('input-consulta-asis-desde').value : '';
@@ -1528,7 +1715,10 @@ function renderConsultaAsistenciaTable() {
 
   // 1. CRITICAL REQUIREMENT: Extract exclusively the dates that have at least one valid attendance record for the active ficha!
   const allRecordedDates = Object.keys(APP_STATE.asistencias)
-    .filter(d => d && Object.keys(APP_STATE.asistencias[d]).length > 0)
+    .filter(d => {
+      if (!d || !APP_STATE.asistencias[d]) return false;
+      return fichaAprendices.some(a => APP_STATE.asistencias[d][a.documento] !== undefined && APP_STATE.asistencias[d][a.documento] !== null && APP_STATE.asistencias[d][a.documento] !== '');
+    })
     .sort();
 
   // 2. Filter dates by optional range
@@ -1542,8 +1732,8 @@ function renderConsultaAsistenciaTable() {
   const totalDaysEl = document.getElementById('metric-consulta-total-dias');
   if (totalDaysEl) totalDaysEl.textContent = filteredDates.length;
 
-  // Filter learners
-  let filteredLearners = APP_STATE.aprendices.filter(a => {
+  // Filter learners for current ficha
+  let filteredLearners = fichaAprendices.filter(a => {
     if (searchQuery) {
       const matchName = `${a.nombres} ${a.apellidos}`.toLowerCase().includes(searchQuery);
       const matchDoc = a.documento.toLowerCase().includes(searchQuery);
@@ -1621,7 +1811,7 @@ function renderConsultaAsistenciaTable() {
       <tbody>
         <tr>
           <td colspan="${10 + filteredDates.length}" class="p-8 text-center text-slate-400 font-semibold">
-            No se encontraron registros de asistencia bajo los filtros seleccionados.
+            No se encontraron registros de asistencia bajo los filtros seleccionados para la Ficha ${ficha.codigo}.
           </td>
         </tr>
       </tbody>
@@ -1695,15 +1885,19 @@ function filterConsultaNotasView() {
 }
 
 function renderConsultaNotasTable() {
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
+
   const searchQuery = (document.getElementById('input-search-consulta-notas') ? document.getElementById('input-search-consulta-notas').value : '').toLowerCase().trim();
   const filterState = document.getElementById('select-filter-consulta-notas') ? document.getElementById('select-filter-consulta-notas').value : 'todos';
 
   const raps = [];
-  APP_STATE.competencias.forEach(c => {
+  fichaCompetencias.forEach(c => {
     (c.resultados || []).forEach(r => raps.push({ id: r.id, codigo: r.codigo, desc: r.descripcion, compCodigo: c.codigo }));
   });
 
-  let learners = APP_STATE.aprendices.filter(a => {
+  let learners = fichaAprendices.filter(a => {
     if (searchQuery) {
       const matchName = `${a.nombres} ${a.apellidos}`.toLowerCase().includes(searchQuery);
       const matchDoc = a.documento.toLowerCase().includes(searchQuery);
@@ -1727,49 +1921,61 @@ function renderConsultaNotasTable() {
       </thead>
     `;
 
-    const tbody = learners.map(a => {
-      let aprobados = 0, noAprobados = 0, enBlanco = 0;
+    if (learners.length === 0) {
+      tableMode1.innerHTML = thead + `
+        <tbody>
+          <tr>
+            <td colspan="${4 + raps.length}" class="p-8 text-center text-slate-400 font-semibold">
+              No hay aprendices o notas registradas para la Ficha ${ficha.codigo}.
+            </td>
+          </tr>
+        </tbody>
+      `;
+    } else {
+      const tbody = learners.map(a => {
+        let aprobados = 0, noAprobados = 0, enBlanco = 0;
 
-      const rapTds = raps.map(r => {
-        const key = `${a.documento}_${r.id}`;
-        const cal = APP_STATE.calificaciones[key];
-        const state = cal ? cal.estado : 'en_blanco';
+        const rapTds = raps.map(r => {
+          const key = `${a.documento}_${r.id}`;
+          const cal = APP_STATE.calificaciones[key];
+          const state = cal ? cal.estado : 'en_blanco';
 
-        let badge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200">-</span>';
-        if (state === 'aprobado') {
-          aprobados++;
-          badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">A</span>';
-        } else if (state === 'no_aprobado') {
-          noAprobados++;
-          badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">NA</span>';
-        } else {
-          enBlanco++;
-        }
+          let badge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200">-</span>';
+          if (state === 'aprobado') {
+            aprobados++;
+            badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">A</span>';
+          } else if (state === 'no_aprobado') {
+            noAprobados++;
+            badge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">NA</span>';
+          } else {
+            enBlanco++;
+          }
 
-        return `<td class="p-3 text-center">${badge}</td>`;
+          return `<td class="p-3 text-center">${badge}</td>`;
+        }).join('');
+
+        if (filterState === 'aprobados' && noAprobados > 0) return '';
+        if (filterState === 'no_aprobados' && noAprobados === 0) return '';
+        if (filterState === 'en_blanco' && enBlanco === 0) return '';
+
+        const totalRaps = raps.length || 1;
+        const perc = Math.round((aprobados / totalRaps) * 100);
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
+            <td class="p-3 font-mono text-slate-600">${a.documento}</td>
+            ${rapTds}
+            <td class="p-3 text-center font-mono font-black text-emerald-700 bg-emerald-50/40">${perc}%</td>
+            <td class="p-3 text-center">
+              ${noAprobados > 0 ? '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">Con Pendientes</span>' : '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Al Día</span>'}
+            </td>
+          </tr>
+        `;
       }).join('');
 
-      if (filterState === 'aprobados' && noAprobados > 0) return '';
-      if (filterState === 'no_aprobados' && noAprobados === 0) return '';
-      if (filterState === 'en_blanco' && enBlanco === 0) return '';
-
-      const totalRaps = raps.length || 1;
-      const perc = Math.round((aprobados / totalRaps) * 100);
-
-      return `
-        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-          <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
-          <td class="p-3 font-mono text-slate-600">${a.documento}</td>
-          ${rapTds}
-          <td class="p-3 text-center font-mono font-black text-emerald-700 bg-emerald-50/40">${perc}%</td>
-          <td class="p-3 text-center">
-            ${noAprobados > 0 ? '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px]">Con Pendientes</span>' : '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">Al Día</span>'}
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    tableMode1.innerHTML = thead + `<tbody class="divide-y divide-slate-100">${tbody}</tbody>`;
+      tableMode1.innerHTML = thead + `<tbody class="divide-y divide-slate-100">${tbody}</tbody>`;
+    }
   }
 
   // MODE 2: POR ACTIVIDADES
@@ -1790,50 +1996,75 @@ function renderConsultaNotasTable() {
       </thead>
     `;
 
-    const tbody2 = learners.map(a => {
-      const actTds = APP_STATE.activities.map(act => {
-        const key = `${a.documento}_${act.rapCodigo.replace('-', '')}`;
-        const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco' };
-        
-        let label = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100">En Blanco (-)</span>';
-        if (cal.estado === 'aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">Aprobado</span>';
-        else if (cal.estado === 'no_aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">No Aprobado</span>';
+    if (learners.length === 0) {
+      tableMode2.innerHTML = thead2 + `
+        <tbody>
+          <tr>
+            <td colspan="${2 + APP_STATE.activities.length}" class="p-8 text-center text-slate-400 font-semibold">
+              No hay aprendices registrados para la Ficha ${ficha.codigo}.
+            </td>
+          </tr>
+        </tbody>
+      `;
+    } else {
+      const tbody2 = learners.map(a => {
+        const actTds = APP_STATE.activities.map(act => {
+          const key = `${a.documento}_${act.rapCodigo.replace('-', '')}`;
+          const cal = APP_STATE.calificaciones[key] || { estado: 'en_blanco' };
+          
+          let label = '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-400 bg-slate-100">En Blanco (-)</span>';
+          if (cal.estado === 'aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">Aprobado</span>';
+          else if (cal.estado === 'no_aprobado') label = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">No Aprobado</span>';
 
-        return `<td class="p-3 text-center">${label}</td>`;
+          return `<td class="p-3 text-center">${label}</td>`;
+        }).join('');
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
+            <td class="p-3 font-mono text-slate-600">${a.documento}</td>
+            ${actTds}
+          </tr>
+        `;
       }).join('');
 
-      return `
-        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-          <td class="p-3 font-bold text-slate-900 sticky left-0 bg-white z-10">${a.nombres} ${a.apellidos}</td>
-          <td class="p-3 font-mono text-slate-600">${a.documento}</td>
-          ${actTds}
-        </tr>
-      `;
-    }).join('');
-
-    tableMode2.innerHTML = thead2 + `<tbody class="divide-y divide-slate-100">${tbody2}</tbody>`;
+      tableMode2.innerHTML = thead2 + `<tbody class="divide-y divide-slate-100">${tbody2}</tbody>`;
+    }
   }
 
   // MODE 3: BOLETÍN INDIVIDUAL
   const selectBoletin = document.getElementById('select-boletin-aprendiz');
-  if (selectBoletin && selectBoletin.options.length === 0) {
-    selectBoletin.innerHTML = APP_STATE.aprendices.map(a => `
+  if (selectBoletin) {
+    selectBoletin.innerHTML = fichaAprendices.map(a => `
       <option value="${a.documento}">${a.nombres} ${a.apellidos} (${a.documento})</option>
     `).join('');
-    if (APP_STATE.aprendices[0]) {
-      renderBoletinIndividual(APP_STATE.aprendices[0].documento);
+    if (fichaAprendices.length > 0) {
+      renderBoletinIndividual(fichaAprendices[0].documento);
+    } else {
+      const container = document.getElementById('card-boletin-individual-content');
+      if (container) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 font-semibold">No hay aprendices registrados para la Ficha ${ficha.codigo}.</div>`;
+      }
     }
   }
 }
 
 function renderBoletinIndividual(documento) {
-  const learner = APP_STATE.aprendices.find(a => a.documento === documento) || APP_STATE.aprendices[0];
-  const container = document.getElementById('card-boletin-individual-content');
-  if (!learner || !container) return;
-
   const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
+
+  const learner = fichaAprendices.find(a => a.documento === documento) || fichaAprendices[0];
+  const container = document.getElementById('card-boletin-individual-content');
+  if (!learner || !container) {
+    if (container) {
+      container.innerHTML = `<div class="p-8 text-center text-slate-400 font-semibold">No hay aprendiz seleccionado en la Ficha ${ficha.codigo}.</div>`;
+    }
+    return;
+  }
+
   const raps = [];
-  APP_STATE.competencias.forEach(c => {
+  fichaCompetencias.forEach(c => {
     (c.resultados || []).forEach(r => raps.push({ ...r, compCodigo: c.codigo, compNombre: c.nombre }));
   });
 
@@ -2028,19 +2259,22 @@ function openPrintableActaModal(id) {
 // 12. VIEW 8: VISTA APRENDIZ & STORAGE PHOTO ENGINE
 // =========================================================================
 function renderLearnerPortal() {
-  const learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc) || APP_STATE.aprendices[0];
+  const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
+
+  const learner = fichaAprendices.find(a => a.documento === APP_STATE.currentUserDoc) || fichaAprendices[0] || APP_STATE.aprendices[0];
   if (!learner) return;
 
   const selLearner = document.getElementById('select-active-learner-view');
   if (selLearner) {
-    selLearner.innerHTML = APP_STATE.aprendices.map(a => `
+    selLearner.innerHTML = fichaAprendices.map(a => `
       <option value="${a.documento}" ${a.documento === learner.documento ? 'selected' : ''}>
         ${a.nombres} ${a.apellidos} (${a.documento})
       </option>
     `).join('');
   }
 
-  const ficha = getCurrentFicha();
   document.getElementById('portal-aprendiz-name').textContent = `${learner.nombres} ${learner.apellidos}`;
   document.getElementById('portal-aprendiz-doc').textContent = learner.documento;
   document.getElementById('portal-aprendiz-email').textContent = learner.correo;
@@ -2059,7 +2293,7 @@ function renderLearnerPortal() {
   const dates = Object.keys(APP_STATE.asistencias);
   let p = 0, fi = 0, fj = 0;
   dates.forEach(d => {
-    const st = APP_STATE.asistencias[d][learner.documento];
+    const st = APP_STATE.asistencias[d] ? APP_STATE.asistencias[d][learner.documento] : null;
     if (st === 'presente') p++;
     else if (st === 'injustificada') fi++;
     else if (st === 'justificada') fj++;
@@ -2078,7 +2312,7 @@ function renderLearnerPortal() {
   const rapsList = document.getElementById('portal-raps-list');
   if (rapsList) {
     const raps = [];
-    APP_STATE.competencias.forEach(c => {
+    fichaCompetencias.forEach(c => {
       (c.resultados || []).forEach(r => raps.push({ ...r, compCodigo: c.codigo }));
     });
 
@@ -2207,6 +2441,7 @@ async function saveInstructorProfileData() {
 function handleExcelFileUpload(event) {
   const file = event.target.files[0];
   if (!file || typeof XLSX === 'undefined') return;
+  const currentFicha = getCurrentFicha();
 
   const reader = new FileReader();
   reader.onload = async (evt) => {
@@ -2225,6 +2460,7 @@ function handleExcelFileUpload(event) {
 
           return {
             id: `ap_${Date.now()}_${idx}`,
+            fichaCodigo: currentFicha.codigo,
             tipoDoc: 'CC',
             documento: doc,
             nombres: nombres,
@@ -2239,12 +2475,17 @@ function handleExcelFileUpload(event) {
           };
         });
 
-        APP_STATE.aprendices = parsedAprendices;
+        // Merge keeping other fichas intact
+        APP_STATE.aprendices = [
+          ...APP_STATE.aprendices.filter(a => a.fichaCodigo && a.fichaCodigo !== currentFicha.codigo),
+          ...parsedAprendices
+        ];
+
         saveToLocalStorage();
         renderAllViews();
         
         await syncDataToSupabase();
-        alert(`¡Carga masiva completada! Se registraron ${parsedAprendices.length} aprendices en el sistema.`);
+        alert(`¡Carga masiva completada! Se registraron ${parsedAprendices.length} aprendices en la Ficha ${currentFicha.codigo}.`);
       }
     } catch (err) {
       alert(`Error al leer archivo Excel: ${err.message}`);
@@ -2268,16 +2509,22 @@ function downloadExcelTemplate() {
 function exportAttendanceToExcel() {
   if (typeof XLSX === 'undefined') return;
   const ficha = getCurrentFicha();
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
   
-  // Only export days that actually have attendance records
-  const validDates = Object.keys(APP_STATE.asistencias).filter(d => Object.keys(APP_STATE.asistencias[d]).length > 0).sort();
+  // Only export days that actually have attendance records for active ficha
+  const validDates = Object.keys(APP_STATE.asistencias)
+    .filter(d => {
+      if (!d || !APP_STATE.asistencias[d]) return false;
+      return fichaAprendices.some(a => APP_STATE.asistencias[d][a.documento] !== undefined && APP_STATE.asistencias[d][a.documento] !== null && APP_STATE.asistencias[d][a.documento] !== '');
+    })
+    .sort();
 
-  const rows = APP_STATE.aprendices.map(a => {
+  const rows = fichaAprendices.map(a => {
     const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
     let p = 0, fi = 0, fj = 0, r = 0, e = 0;
     
     validDates.forEach(d => {
-      const st = APP_STATE.asistencias[d][a.documento] || 'presente';
+      const st = APP_STATE.asistencias[d] ? APP_STATE.asistencias[d][a.documento] : 'presente';
       row[d] = st === 'presente' ? 'P' : (st === 'injustificada' ? 'FI' : (st === 'justificada' ? 'FJ' : (st === 'retardo' ? 'R' : 'E')));
       if (st === 'presente') p++;
       else if (st === 'injustificada') fi++;
@@ -2305,10 +2552,13 @@ function exportAttendanceToExcel() {
 function exportNotasToExcel() {
   if (typeof XLSX === 'undefined') return;
   const ficha = getCurrentFicha();
-  const rows = APP_STATE.aprendices.map(a => {
+  const fichaAprendices = getAprendicesForFicha(ficha.codigo);
+  const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
+
+  const rows = fichaAprendices.map(a => {
     const row = { 'Documento': a.documento, 'Aprendiz': `${a.nombres} ${a.apellidos}` };
     let aprobados = 0, total = 0;
-    APP_STATE.competencias.forEach(c => {
+    fichaCompetencias.forEach(c => {
       (c.resultados || []).forEach(r => {
         total++;
         const cal = APP_STATE.calificaciones[`${a.documento}_${r.id}`];
