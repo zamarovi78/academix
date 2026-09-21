@@ -10,12 +10,70 @@ const SUPABASE_URL = 'https://gusbmqyaiacyllexfkkc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_rCcY7oDdFQ7up5W4QGuACA_zdHJezBo';
 
 let supabaseClient = null;
-if (typeof supabase !== 'undefined' && supabase.createClient) {
+
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+  if (typeof window !== 'undefined') {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return supabaseClient;
+      } catch (e) {
+        console.warn('Error inicializando window.supabase:', e);
+      }
+    }
+  }
+  if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+    try {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return supabaseClient;
+    } catch (e) {
+      console.warn('Error inicializando supabase:', e);
+    }
+  }
+  return null;
+}
+
+// Resilient direct REST API fetch for Supabase (100% reliable)
+async function supabaseRestFetch(endpoint, query = '') {
   try {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase Client v2 conectado a:', SUPABASE_URL);
+    const fullUrl = `${SUPABASE_URL}/rest/v1/${endpoint}${query ? (query.startsWith('?') ? query : '?' + query) : ''}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) {
+      console.warn(`Supabase REST fetch status ${response.status} en ${endpoint}`);
+      return null;
+    }
+    return await response.json();
   } catch (err) {
-    console.warn('Aviso conexión Supabase:', err);
+    console.warn(`Supabase REST fetch network error en ${endpoint}:`, err);
+    return null;
+  }
+}
+
+async function supabaseRestUpsert(table, payload, onConflict = '') {
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/${table}${onConflict ? `?on_conflict=${onConflict}` : ''}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+    return response.ok;
+  } catch (err) {
+    console.warn(`Supabase REST upsert error en ${table}:`, err);
+    return false;
   }
 }
 
@@ -92,13 +150,7 @@ const DEFAULT_ACTIVITIES = [
   },
 ];
 
-// Initial Seeds (Cleaned to rely strictly on real Supabase database)
-const SEED_APRENDICES = [];
-const SEED_ASISTENCIAS = {};
-const SEED_CALIFICACIONES = {};
-const SEED_LLAMADOS = [];
-
-// Global Application State
+// Global Application State (Initialized with real Supabase data structure)
 const APP_STATE = {
   isLoggedIn: false,
   currentUserRole: 'instructor', // 'instructor' | 'aprendiz' | 'admin'
@@ -108,34 +160,37 @@ const APP_STATE = {
   // Fichas
   fichas: [
     {
-      codigo: '2694110',
-      programa: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)',
-      jornada: 'Jornada Tarde (12:00m - 6:00pm)',
-      ambiente: 'Ambiente de Sistemas 302',
-      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
-      centroFormacion: 'Centro de Servicios y Gestión Empresarial',
-      regional: 'Regional Antioquia'
-    },
-    {
-      codigo: '2718902',
-      programa: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)',
-      jornada: 'Jornada Mañana (6:00am - 12:00m)',
-      ambiente: 'Ambiente 204 - Software',
-      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
-      centroFormacion: 'Centro de Servicios y Gestión Empresarial',
-      regional: 'Regional Antioquia'
-    },
-    {
-      codigo: '2540193',
-      programa: 'Tecnólogo en Animación 3D y Modelado Digital',
+      id: 'd95065f7-9a39-49e2-8424-8141283c2ff8',
+      codigo: '3532730',
+      programa: 'Análisis y Desarrollo de Software ADSO',
       jornada: 'Jornada Mixta',
-      ambiente: 'Laboratorio de Render',
+      ambiente: 'ADSO 2',
+      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
+      centroFormacion: 'Centro de Servicios y Gestión Empresarial',
+      regional: 'Regional Antioquia'
+    },
+    {
+      id: 'c98f959d-59c0-46e0-9572-8fab74e6d9ff',
+      codigo: '3231752',
+      programa: 'Análisis y Desarrollo de Software (ADSO)',
+      jornada: 'Jornada Tarde (12:00m - 6:00pm)',
+      ambiente: 'ADSO 2',
+      instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
+      centroFormacion: 'Centro de Servicios y Gestión Empresarial',
+      regional: 'Regional Antioquia'
+    },
+    {
+      id: '961259d4-d497-4f60-9227-4822b918a121',
+      codigo: '3294087',
+      programa: 'Análisis y Desarrollo de Software (ADSO)',
+      jornada: 'Jornada Tarde (12:00m - 6:00pm)',
+      ambiente: 'ADSO 3',
       instructorLider: 'Zahedys Manuel Rodriguez Villarreal',
       centroFormacion: 'Centro de Servicios y Gestión Empresarial',
       regional: 'Regional Antioquia'
     }
   ],
-  currentFichaCodigo: '2694110',
+  currentFichaCodigo: '3532730',
   
   // Core Records
   aprendices: [],
@@ -162,211 +217,154 @@ const APP_STATE = {
 // 1. SUPABASE REAL DATABASE FETCHING & SYNCING
 // =========================================================================
 async function fetchRealDataFromSupabase() {
-  if (!supabaseClient) return;
-
   try {
     console.log('🔄 Conectando con Supabase para obtener información real...');
     
-    // 1. Fetch Instructor Profile
-    try {
-      const { data: instData, error: instErr } = await supabaseClient
-        .from('instructores')
-        .select('*')
-        .limit(1);
-
-      if (!instErr && instData && instData.length > 0) {
-        const dbInst = instData[0];
-        APP_STATE.instructorProfile = {
-          nombres: dbInst.nombres || APP_STATE.instructorProfile.nombres,
-          apellidos: dbInst.apellidos || APP_STATE.instructorProfile.apellidos,
-          documento: dbInst.documento || APP_STATE.instructorProfile.documento,
-          email: dbInst.email || APP_STATE.instructorProfile.email,
-          cargo: dbInst.cargo || APP_STATE.instructorProfile.cargo,
-          centroFormacion: dbInst.centro_formacion || APP_STATE.instructorProfile.centroFormacion,
-          foto: dbInst.foto || APP_STATE.instructorProfile.foto,
-          firmaDigital: dbInst.firma_digital || `${dbInst.nombres} ${dbInst.apellidos}`
-        };
-        APP_STATE.currentUserNombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
-      }
-    } catch (e) {
-      console.warn('Error al cargar instructores:', e);
-    }
-
-    // 2. Fetch Fichas
+    // 1. Fetch Fichas directly from REST endpoint
+    const fichasData = await supabaseRestFetch('fichas', 'select=*&order=codigo.asc');
     const fichaIdToCodeMap = {};
-    try {
-      const { data: fichasData, error: fichasErr } = await supabaseClient
-        .from('fichas')
-        .select('*');
+    const fichaCodeToIdMap = {};
 
-      if (!fichasErr && fichasData && fichasData.length > 0) {
-        APP_STATE.fichas = fichasData.map(f => {
-          const c = String(f.codigo || '').trim();
-          if (f.id && c) {
-            fichaIdToCodeMap[f.id] = c;
-          }
-          return {
-            id: f.id,
-            codigo: c,
-            programa: f.programa || 'Tecnólogo en ADSO',
-            jornada: f.jornada || 'Jornada Tarde',
-            ambiente: f.ambiente || 'Ambiente de Formación',
-            instructorLider: APP_STATE.currentUserNombre,
-            centroFormacion: APP_STATE.instructorProfile.centroFormacion,
-            regional: 'Regional Antioquia'
-          };
-        });
-
-        // Ensure active ficha is valid
-        if (!APP_STATE.fichas.some(f => f.codigo === APP_STATE.currentFichaCodigo)) {
-          APP_STATE.currentFichaCodigo = APP_STATE.fichas[0].codigo;
+    if (Array.isArray(fichasData) && fichasData.length > 0) {
+      APP_STATE.fichas = fichasData.map(f => {
+        const c = String(f.codigo || '').trim();
+        if (f.id && c) {
+          fichaIdToCodeMap[f.id] = c;
+          fichaCodeToIdMap[c] = f.id;
         }
+        return {
+          id: f.id,
+          codigo: c,
+          programa: f.programa || 'Análisis y Desarrollo de Software ADSO',
+          jornada: f.jornada || 'Jornada Mixta',
+          ambiente: f.ambiente || 'ADSO 2',
+          instructorLider: APP_STATE.currentUserNombre,
+          centroFormacion: APP_STATE.instructorProfile.centroFormacion,
+          regional: 'Regional Antioquia'
+        };
+      });
+
+      // Ensure active ficha exists in fetched list
+      const hasCurrent = APP_STATE.fichas.some(f => f.codigo === APP_STATE.currentFichaCodigo);
+      if (!hasCurrent && APP_STATE.fichas.length > 0) {
+        APP_STATE.currentFichaCodigo = APP_STATE.fichas[0].codigo;
       }
-    } catch (e) {
-      console.warn('Error al cargar fichas:', e);
+      console.log(`✅ ${APP_STATE.fichas.length} fichas reales cargadas desde Supabase. Ficha activa: ${APP_STATE.currentFichaCodigo}`);
     }
 
-    // 3. Fetch Real Aprendices with correct ficha_codigo mapping
-    try {
-      const { data: apData, error: apErr } = await supabaseClient
-        .from('aprendices')
-        .select('*');
+    // 2. Fetch Real Aprendices from Supabase
+    const apData = await supabaseRestFetch('aprendices', 'select=*&order=apellidos.asc,nombres.asc');
+    if (Array.isArray(apData) && apData.length > 0) {
+      APP_STATE.aprendices = apData.map(a => {
+        const directCode = a.ficha_codigo ? String(a.ficha_codigo).trim() : '';
+        const mappedCode = (a.ficha_id && fichaIdToCodeMap[a.ficha_id]) ? String(fichaIdToCodeMap[a.ficha_id]).trim() : '';
+        const finalFicha = directCode || mappedCode || '';
 
-      if (!apErr && apData) {
-        APP_STATE.aprendices = apData.map(a => {
-          const directCode = a.ficha_codigo ? String(a.ficha_codigo).trim() : '';
-          const mappedCode = a.ficha_id && fichaIdToCodeMap[a.ficha_id] ? fichaIdToCodeMap[a.ficha_id] : '';
-          const finalFicha = directCode || mappedCode || '';
-
-          return {
-            id: String(a.id || a.documento),
-            tipoDoc: a.tipo_doc || a.tipo_documento || 'CC',
-            documento: String(a.documento || '').trim(),
-            nombres: a.nombres || '',
-            apellidos: a.apellidos || '',
-            correo: a.email || a.correo || `${a.documento}@misena.edu.co`,
-            usuario: String(a.usuario || a.documento || ''),
-            password: String(a.password || a.contrasena || a.documento || ''),
-            estado: a.estado_matricula || a.estado || 'En Formación',
-            foto: a.foto || '',
-            rachaAsistencia: Number(a.racha_asistencia || 100),
-            fallasConsecutivas: Number(a.fallas_consecutivas || 0),
-            fichaCodigo: finalFicha
-          };
-        });
-      }
-    } catch (e) {
-      console.warn('Error al cargar aprendices:', e);
+        return {
+          id: String(a.id || a.documento),
+          ficha_id: a.ficha_id || '',
+          fichaCodigo: finalFicha,
+          ficha_codigo: finalFicha,
+          tipoDoc: a.tipo_doc || a.tipo_documento || 'CC',
+          documento: String(a.documento || '').trim(),
+          nombres: a.nombres || '',
+          apellidos: a.apellidos || '',
+          correo: a.email || a.correo || `${a.documento}@misena.edu.co`,
+          usuario: String(a.usuario || a.documento || ''),
+          password: String(a.password || a.contrasena || a.documento || ''),
+          estado: a.estado_matricula || a.estado || 'En Formación',
+          foto: a.foto || '',
+          rachaAsistencia: Number(a.racha_asistencia || 100),
+          fallasConsecutivas: Number(a.fallas_consecutivas || 0)
+        };
+      });
+      console.log(`✅ ${APP_STATE.aprendices.length} aprendices reales cargados desde Supabase.`);
     }
 
-    // 4. Fetch Real Asistencias from Supabase
-    try {
-      const { data: asisData, error: asisErr } = await supabaseClient
-        .from('asistencias')
-        .select('*');
-
-      const realAsistencias = {};
-      if (!asisErr && asisData && asisData.length > 0) {
-        asisData.forEach(row => {
-          const d = row.fecha;
-          if (!d) return;
-          if (!realAsistencias[d]) realAsistencias[d] = {};
-          let st = row.estado || 'presente';
-          if (st === 'falta') st = 'injustificada';
-          else if (st === 'retraso') st = 'retardo';
-          else if (st === 'excusa') st = 'justificada';
-          realAsistencias[d][String(row.aprendiz_documento).trim()] = st;
-        });
-      }
-      APP_STATE.asistencias = realAsistencias;
-    } catch (e) {
-      console.warn('Error al cargar asistencias:', e);
+    // 3. Fetch Instructor Profile
+    const instData = await supabaseRestFetch('instructores', 'select=*&limit=1');
+    if (Array.isArray(instData) && instData.length > 0) {
+      const dbInst = instData[0];
+      APP_STATE.instructorProfile = {
+        nombres: dbInst.nombres || APP_STATE.instructorProfile.nombres,
+        apellidos: dbInst.apellidos || APP_STATE.instructorProfile.apellidos,
+        documento: dbInst.documento || APP_STATE.instructorProfile.documento,
+        email: dbInst.email || APP_STATE.instructorProfile.email,
+        cargo: dbInst.cargo || APP_STATE.instructorProfile.cargo,
+        centroFormacion: dbInst.centro_formacion || APP_STATE.instructorProfile.centroFormacion,
+        foto: dbInst.foto || APP_STATE.instructorProfile.foto,
+        firmaDigital: dbInst.firma_digital || `${dbInst.nombres} ${dbInst.apellidos}`
+      };
+      APP_STATE.currentUserNombre = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
     }
 
-    // 5. Fetch Real Calificaciones from Supabase
-    try {
-      const { data: calData, error: calErr } = await supabaseClient
-        .from('calificaciones')
-        .select('*');
-
+    // 4. Fetch Calificaciones
+    const calData = await supabaseRestFetch('calificaciones', 'select=*');
+    if (Array.isArray(calData) && calData.length > 0) {
       const realCalifs = {};
-      if (!calErr && calData && calData.length > 0) {
-        calData.forEach(cr => {
-          const doc = String(cr.aprendiz_documento).trim();
-          const rapCode = cr.rap_codigo ? (cr.rap_codigo.startsWith('RAP') ? cr.rap_codigo.replace('-', '') : cr.rap_codigo) : 'RAP1';
-          const key = `${doc}_${rapCode}`;
-          let estado = 'en_blanco';
-          if (cr.calificacion === 'A' || cr.calificacion === 'aprobado') estado = 'aprobado';
-          else if (cr.calificacion === 'NA' || cr.calificacion === 'no_aprobado') estado = 'no_aprobado';
-          
-          realCalifs[key] = {
-            estado: estado,
-            feedback: cr.observacion || '',
-            planRecuperacion: cr.plan_actividad || ''
-          };
-        });
-      }
+      calData.forEach(cr => {
+        const doc = String(cr.aprendiz_documento || '').trim();
+        if (!doc) return;
+        const rapCode = cr.rap_codigo ? (cr.rap_codigo.startsWith('RAP') ? cr.rap_codigo.replace('-', '') : cr.rap_codigo) : 'RAP1';
+        const key = `${doc}_${rapCode}`;
+        let estado = 'en_blanco';
+        if (cr.calificacion === 'A' || cr.calificacion === 'aprobado') estado = 'aprobado';
+        else if (cr.calificacion === 'NA' || cr.calificacion === 'no_aprobado') estado = 'no_aprobado';
+        
+        realCalifs[key] = {
+          estado: estado,
+          feedback: cr.observacion || '',
+          planRecuperacion: cr.plan_actividad || ''
+        };
+      });
       APP_STATE.calificaciones = realCalifs;
-    } catch (e) {
-      console.warn('Error al cargar calificaciones:', e);
     }
 
-    // 6. Fetch Competencias & RAPs
-    try {
-      const { data: compData } = await supabaseClient.from('competencias').select('*');
-      const { data: rapData } = await supabaseClient.from('resultados_aprendizaje').select('*');
-      
-      if (compData && compData.length > 0) {
-        APP_STATE.competencias = compData.map(c => {
-          const compRaps = (rapData || [])
-            .filter(r => r.competencia_id === c.id || r.competencia_codigo === c.codigo)
-            .map(r => ({
-              id: r.codigo_rap ? r.codigo_rap.replace('-', '') : (r.id || 'RAP1'),
-              codigo: r.codigo_rap || 'RAP-01',
-              descripcion: r.nombre_rap || r.descripcion || c.nombre
-            }));
+    // 5. Fetch Competencias & RAPs
+    const compData = await supabaseRestFetch('competencias', 'select=*');
+    const rapData = await supabaseRestFetch('resultados_aprendizaje', 'select=*');
+    if (Array.isArray(compData) && compData.length > 0) {
+      APP_STATE.competencias = compData.map(c => {
+        const compRaps = (Array.isArray(rapData) ? rapData : [])
+          .filter(r => r.competencia_id === c.id || r.competencia_codigo === c.codigo)
+          .map(r => ({
+            id: r.codigo_rap ? r.codigo_rap.replace('-', '') : (r.id || 'RAP1'),
+            codigo: r.codigo_rap || 'RAP-01',
+            descripcion: r.nombre_rap || r.descripcion || c.nombre
+          }));
 
-          return {
-            id: c.id,
-            codigo: c.codigo,
-            nombre: c.nombre,
-            horas: Number(c.horas) || 160,
-            estado: c.estado || 'Activo',
-            resultados: compRaps.length > 0 ? compRaps : (c.resultados || [
-              { id: 'RAP1', codigo: 'RAP-01', descripcion: c.nombre }
-            ])
-          };
-        });
-      }
-    } catch (e) {
-      console.warn('Error al cargar competencias:', e);
+        return {
+          id: c.id,
+          codigo: c.codigo,
+          nombre: c.nombre,
+          horas: Number(c.horas) || 160,
+          estado: c.estado || 'Activo',
+          resultados: compRaps.length > 0 ? compRaps : (c.resultados || [
+            { id: 'RAP1', codigo: 'RAP-01', descripcion: c.nombre }
+          ])
+        };
+      });
     }
 
-    // 7. Fetch Llamados de atención
-    try {
-      const { data: llamData } = await supabaseClient.from('llamados_atencion').select('*');
-      if (llamData && llamData.length > 0) {
-        APP_STATE.llamados = llamData.map(l => ({
-          id: String(l.id || l.numero_acta),
-          numeroActa: l.numero_acta || `ACTA-${new Date().getFullYear()}-001`,
-          aprendizDocumento: l.aprendiz_documento,
-          aprendizNombre: l.aprendiz_nombre,
-          tipo: l.tipo || 'inasistencia',
-          fecha: l.fecha || l.fecha_emision || '',
-          motivo: l.motivo || l.causa_detectada || '',
-          compromiso: l.compromiso || '',
-          estado: l.estado || 'pendiente'
-        }));
-      } else {
-        APP_STATE.llamados = [];
-      }
-    } catch (e) {
-      console.warn('Error al cargar llamados:', e);
+    // 6. Fetch Llamados de atención
+    const llamData = await supabaseRestFetch('llamados_atencion', 'select=*');
+    if (Array.isArray(llamData) && llamData.length > 0) {
+      APP_STATE.llamados = llamData.map(l => ({
+        id: String(l.id || l.numero_acta),
+        numeroActa: l.numero_acta || `ACTA-${new Date().getFullYear()}-001`,
+        aprendizDocumento: l.aprendiz_documento,
+        aprendizNombre: l.aprendiz_nombre,
+        tipo: l.tipo || 'inasistencia',
+        fecha: l.fecha || l.fecha_emision || '',
+        motivo: l.motivo || l.causa_detectada || '',
+        compromiso: l.compromiso || '',
+        estado: l.estado || 'pendiente'
+      }));
     }
 
     saveToLocalStorage();
     renderAllViews();
-    console.log('✅ Base de datos Supabase sincronizada con éxito.');
+    console.log('✅ Base de datos Supabase sincronizada con éxito en la vista.');
   } catch (err) {
     console.error('Error al sincronizar con Supabase:', err);
   }
@@ -721,45 +719,52 @@ function navigateToView(viewId) {
 }
 
 function getCurrentFicha() {
-  return APP_STATE.fichas.find(f => f.codigo === APP_STATE.currentFichaCodigo) || APP_STATE.fichas[0];
+  return APP_STATE.fichas.find(f => String(f.codigo).trim() === String(APP_STATE.currentFichaCodigo).trim()) || APP_STATE.fichas[0];
 }
 
 function getAprendicesForFicha(fichaCodigo) {
   const current = getCurrentFicha();
   const targetCodigo = String(fichaCodigo || (current ? current.codigo : APP_STATE.currentFichaCodigo) || '').trim();
   if (!targetCodigo) return [];
+
+  const targetFichaObj = APP_STATE.fichas.find(f => String(f.codigo).trim() === targetCodigo);
+  const targetFichaId = targetFichaObj ? String(targetFichaObj.id || '').trim() : null;
+
   return (APP_STATE.aprendices || []).filter(a => {
     const aFicha = String(a.fichaCodigo || a.ficha_codigo || '').trim();
-    return aFicha === targetCodigo;
+    if (aFicha && aFicha === targetCodigo) return true;
+    if (targetFichaId && a.ficha_id && String(a.ficha_id).trim() === targetFichaId) return true;
+    return false;
   });
 }
 
 function getCompetenciasForFicha(fichaCodigo) {
   const current = getCurrentFicha();
   const targetCodigo = String(fichaCodigo || (current ? current.codigo : APP_STATE.currentFichaCodigo) || '').trim();
-  return (APP_STATE.competencias || []).filter(c => {
+  const filtered = (APP_STATE.competencias || []).filter(c => {
     const cFicha = String(c.fichaCodigo || c.ficha_codigo || '').trim();
     return !cFicha || cFicha === targetCodigo;
   });
+  return filtered.length > 0 ? filtered : APP_STATE.competencias;
 }
 
 function toggleFichaDropdown() {
   const d = document.getElementById('dropdown-fichas-menu');
-  d.classList.toggle('hidden');
+  if (d) d.classList.toggle('hidden');
 }
 
 function toggleNotificationDropdown() {
   const d = document.getElementById('dropdown-notif-menu');
-  d.classList.toggle('hidden');
+  if (d) d.classList.toggle('hidden');
 }
 
 function toggleUserDropdown() {
   const d = document.getElementById('dropdown-user-menu');
-  d.classList.toggle('hidden');
+  if (d) d.classList.toggle('hidden');
 }
 
 function selectFicha(codigo) {
-  APP_STATE.currentFichaCodigo = codigo;
+  APP_STATE.currentFichaCodigo = String(codigo).trim();
   saveToLocalStorage();
   const menu = document.getElementById('dropdown-fichas-menu');
   if (menu) menu.classList.add('hidden');
