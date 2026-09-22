@@ -560,21 +560,24 @@ function selectLoginRole(role) {
   if (role === 'instructor') {
     desc.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-[#002B7F] shrink-0 mt-0.5"></i><span>Acceso para instructores con gestión de fichas, asistencia, notas y actas.</span>';
     labelUser.textContent = 'Usuario o Cédula del Instructor';
-    userInp.value = '8787499';
-    passInp.value = 'zamarovi';
-    userInp.placeholder = '8787499 o instructor';
+    userInp.value = '';
+    passInp.value = '';
+    userInp.placeholder = 'Ingrese usuario o documento';
+    passInp.placeholder = 'Ingrese su contraseña';
   } else if (role === 'aprendiz') {
     desc.innerHTML = '<i data-lucide="badge" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i><span>Portal del aprendiz para consulta de notas, asistencias y foto de perfil.</span>';
     labelUser.textContent = 'Documento de Identidad del Aprendiz';
-    userInp.value = APP_STATE.aprendices[0] ? APP_STATE.aprendices[0].documento : '1001234567';
-    passInp.value = userInp.value;
-    userInp.placeholder = 'Ej. 1001234567';
+    userInp.value = '';
+    passInp.value = '';
+    userInp.placeholder = 'Ingrese número de documento';
+    passInp.placeholder = 'Ingrese su contraseña';
   } else if (role === 'admin') {
     desc.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i><span>Acceso de administración general de sedes y fichas académicas.</span>';
     labelUser.textContent = 'Usuario Administrador';
-    userInp.value = 'Zarro';
-    passInp.value = 'zamarovi78*';
-    userInp.placeholder = 'Zarro';
+    userInp.value = '';
+    passInp.value = '';
+    userInp.placeholder = 'Ingrese usuario administrador';
+    passInp.placeholder = 'Ingrese su contraseña';
   }
 
   if (window.lucide) window.lucide.createIcons();
@@ -642,6 +645,13 @@ function executeLoginSuccess(role, nombre, doc) {
   APP_STATE.currentUserNombre = nombre;
   APP_STATE.currentUserDoc = doc;
 
+  if (role === 'aprendiz') {
+    const learner = APP_STATE.aprendices.find(a => a.documento === doc || a.usuario === doc);
+    if (learner && (learner.fichaCodigo || learner.ficha_codigo)) {
+      APP_STATE.currentFichaCodigo = String(learner.fichaCodigo || learner.ficha_codigo).trim();
+    }
+  }
+
   localStorage.setItem('academix_logged_in', 'true');
   saveToLocalStorage();
 
@@ -677,6 +687,11 @@ function togglePasswordVisibility(inputId) {
 let currentActiveView = 'panel';
 
 function navigateToView(viewId) {
+  // Strict Apprentice Protection: Aprendiz can ONLY access vista-aprendiz
+  if (APP_STATE.currentUserRole === 'aprendiz') {
+    viewId = 'vista-aprendiz';
+  }
+
   currentActiveView = viewId;
 
   // Hide all view sections
@@ -699,11 +714,14 @@ function navigateToView(viewId) {
     }
   });
 
-  // Toggle "Volver al panel" button
+  // Toggle "Volver al panel" button (Always hidden for apprentice)
   const backBtn = document.getElementById('btn-back-to-panel');
   if (backBtn) {
-    if (viewId === 'panel') backBtn.classList.add('hidden');
-    else backBtn.classList.remove('hidden');
+    if (viewId === 'panel' || APP_STATE.currentUserRole === 'aprendiz') {
+      backBtn.classList.add('hidden');
+    } else {
+      backBtn.classList.remove('hidden');
+    }
   }
 
   // Refresh target view data
@@ -749,6 +767,8 @@ function getCompetenciasForFicha(fichaCodigo) {
 }
 
 function toggleFichaDropdown() {
+  // Prohibit toggling dropdown if role is aprendiz
+  if (APP_STATE.currentUserRole === 'aprendiz') return;
   const d = document.getElementById('dropdown-fichas-menu');
   if (d) d.classList.toggle('hidden');
 }
@@ -764,6 +784,10 @@ function toggleUserDropdown() {
 }
 
 function selectFicha(codigo) {
+  // Prohibit ficha switching for aprendiz
+  if (APP_STATE.currentUserRole === 'aprendiz') {
+    return;
+  }
   APP_STATE.currentFichaCodigo = String(codigo).trim();
   saveToLocalStorage();
   const menu = document.getElementById('dropdown-fichas-menu');
@@ -1069,15 +1093,32 @@ function renderAllViews() {
 }
 
 function renderTopNavigation() {
+  const isAprendiz = APP_STATE.currentUserRole === 'aprendiz';
   const ficha = getCurrentFicha();
   
-  const navFicha = document.getElementById('nav-active-ficha-label');
-  if (navFicha) {
-    navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : (ficha.jornada.includes('Mañana') ? 'ADSO Mañana' : 'ADSO')}`;
+  const interactiveCont = document.getElementById('container-nav-ficha-interactive');
+  const readonlyCont = document.getElementById('container-nav-ficha-readonly');
+  
+  if (isAprendiz) {
+    if (interactiveCont) interactiveCont.classList.add('hidden');
+    if (readonlyCont) {
+      readonlyCont.classList.remove('hidden');
+      const readonlyLabel = document.getElementById('nav-readonly-ficha-label');
+      if (readonlyLabel) {
+        readonlyLabel.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : (ficha.jornada.includes('Mañana') ? 'ADSO Mañana' : 'ADSO')}`;
+      }
+    }
+  } else {
+    if (interactiveCont) interactiveCont.classList.remove('hidden');
+    if (readonlyCont) readonlyCont.classList.add('hidden');
+    const navFicha = document.getElementById('nav-active-ficha-label');
+    if (navFicha) {
+      navFicha.textContent = `${ficha.codigo} • ${ficha.jornada.includes('Tarde') ? 'ADSO Tarde' : (ficha.jornada.includes('Mañana') ? 'ADSO Mañana' : 'ADSO')}`;
+    }
   }
 
   const listFichas = document.getElementById('list-dropdown-fichas');
-  if (listFichas) {
+  if (listFichas && !isAprendiz) {
     listFichas.innerHTML = APP_STATE.fichas.map(f => `
       <button onclick="selectFicha('${f.codigo}')" class="w-full text-left px-3 py-2 text-xs rounded-lg flex items-center justify-between transition ${f.codigo === ficha.codigo ? 'bg-blue-50 text-[#002B7F] font-bold' : 'hover:bg-slate-50 text-slate-700'}">
         <span>${f.codigo} • ${f.jornada}</span>
@@ -1086,41 +1127,114 @@ function renderTopNavigation() {
     `).join('');
   }
 
-  // Synchronize any in-view ficha selector elements
-  ['select-asistencia-ficha', 'select-calificaciones-ficha', 'select-consulta-asistencia-ficha', 'select-consulta-notas-ficha'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (sel) {
-      sel.innerHTML = APP_STATE.fichas.map(f => `
-        <option value="${f.codigo}" ${f.codigo === ficha.codigo ? 'selected' : ''}>${f.codigo} • ${f.programa.substring(0, 32)} (${f.jornada.split(' ')[0]})</option>
-      `).join('');
-      sel.value = ficha.codigo;
+  // Synchronize any in-view ficha selector elements (for instructors)
+  if (!isAprendiz) {
+    ['select-asistencia-ficha', 'select-calificaciones-ficha', 'select-consulta-asistencia-ficha', 'select-consulta-notas-ficha'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (sel) {
+        sel.innerHTML = APP_STATE.fichas.map(f => `
+          <option value="${f.codigo}" ${f.codigo === ficha.codigo ? 'selected' : ''}>${f.codigo} • ${f.programa.substring(0, 32)} (${f.jornada.split(' ')[0]})</option>
+        `).join('');
+        sel.value = ficha.codigo;
+      }
+    });
+  }
+
+  // Toggle "Volver al panel" button
+  const backBtn = document.getElementById('btn-back-to-panel');
+  if (backBtn && isAprendiz) {
+    backBtn.classList.add('hidden');
+  }
+
+  // User Profile
+  if (isAprendiz) {
+    const learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc) || {
+      nombres: APP_STATE.currentUserNombre,
+      apellidos: '',
+      correo: 'aprendiz@misena.edu.co',
+      foto: ''
+    };
+    document.getElementById('nav-user-name').textContent = `${learner.nombres} ${learner.apellidos || ''}`.trim();
+    document.getElementById('nav-user-role-badge').textContent = 'Aprendiz SENA';
+    document.getElementById('menu-user-fullname').textContent = `${learner.nombres} ${learner.apellidos || ''}`.trim();
+    document.getElementById('menu-user-email').textContent = learner.correo || 'aprendiz@misena.edu.co';
+
+    const avatar = document.getElementById('nav-user-avatar');
+    if (avatar) {
+      if (learner.foto) {
+        avatar.innerHTML = `<img src="${learner.foto}" class="w-full h-full object-cover">`;
+      } else {
+        avatar.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
+      }
     }
-  });
+  } else {
+    document.getElementById('nav-user-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+    document.getElementById('nav-user-role-badge').textContent = APP_STATE.currentUserRole === 'admin' ? 'Administrador General' : 'Instructor Líder ADSO';
+    document.getElementById('menu-user-fullname').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+    document.getElementById('menu-user-email').textContent = APP_STATE.instructorProfile.email;
 
-  document.getElementById('nav-user-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
-  document.getElementById('menu-user-fullname').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
-  document.getElementById('menu-user-email').textContent = APP_STATE.instructorProfile.email;
-
-  const avatar = document.getElementById('nav-user-avatar');
-  if (avatar) {
-    if (APP_STATE.instructorProfile.foto) {
-      avatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
-    } else {
-      avatar.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
+    const avatar = document.getElementById('nav-user-avatar');
+    if (avatar) {
+      if (APP_STATE.instructorProfile.foto) {
+        avatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
+      } else {
+        avatar.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
+      }
     }
   }
 }
 
 function renderSidebar() {
-  document.getElementById('sidebar-metric-total-llamados').textContent = String(APP_STATE.llamados.length).padStart(2, '0');
-  document.getElementById('sidebar-metric-inasistencias').textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'inasistencia').length).padStart(2, '0');
-  document.getElementById('sidebar-metric-academicos').textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'academico').length).padStart(2, '0');
-  document.getElementById('sidebar-badge-llamados').textContent = APP_STATE.llamados.length;
-  document.getElementById('sidebar-footer-name').textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+  const isAprendiz = APP_STATE.currentUserRole === 'aprendiz';
 
-  const footAvatar = document.getElementById('sidebar-footer-avatar');
-  if (footAvatar && APP_STATE.instructorProfile.foto) {
-    footAvatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
+  // Toggle navigation items based on role
+  document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
+    const navId = btn.getAttribute('data-nav-id');
+    if (isAprendiz) {
+      if (navId === 'vista-aprendiz') {
+        btn.classList.remove('hidden');
+        const span = btn.querySelector('span');
+        if (span) span.textContent = 'Mi Información Personal';
+      } else {
+        btn.classList.add('hidden');
+      }
+    } else {
+      btn.classList.remove('hidden');
+      if (navId === 'vista-aprendiz') {
+        const span = btn.querySelector('span');
+        if (span) span.textContent = 'Vista Aprendiz (Read-Only)';
+      }
+    }
+  });
+
+  const instructorWidgets = document.getElementById('sidebar-instructor-widgets');
+  const aprendizWidget = document.getElementById('sidebar-aprendiz-widget');
+  const instructorFooter = document.getElementById('sidebar-footer-instructor');
+
+  if (isAprendiz) {
+    if (instructorWidgets) instructorWidgets.classList.add('hidden');
+    if (aprendizWidget) aprendizWidget.classList.remove('hidden');
+    if (instructorFooter) instructorFooter.classList.add('hidden');
+  } else {
+    if (instructorWidgets) instructorWidgets.classList.remove('hidden');
+    if (aprendizWidget) aprendizWidget.classList.add('hidden');
+    if (instructorFooter) instructorFooter.classList.remove('hidden');
+
+    const totalEl = document.getElementById('sidebar-metric-total-llamados');
+    if (totalEl) totalEl.textContent = String(APP_STATE.llamados.length).padStart(2, '0');
+    const inasEl = document.getElementById('sidebar-metric-inasistencias');
+    if (inasEl) inasEl.textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'inasistencia').length).padStart(2, '0');
+    const acadEl = document.getElementById('sidebar-metric-academicos');
+    if (acadEl) acadEl.textContent = String(APP_STATE.llamados.filter(l => l.tipo === 'academico').length).padStart(2, '0');
+    const badgeEl = document.getElementById('sidebar-badge-llamados');
+    if (badgeEl) badgeEl.textContent = APP_STATE.llamados.length;
+    const nameEl = document.getElementById('sidebar-footer-name');
+    if (nameEl) nameEl.textContent = `${APP_STATE.instructorProfile.nombres} ${APP_STATE.instructorProfile.apellidos}`;
+
+    const footAvatar = document.getElementById('sidebar-footer-avatar');
+    if (footAvatar && APP_STATE.instructorProfile.foto) {
+      footAvatar.innerHTML = `<img src="${APP_STATE.instructorProfile.foto}" class="w-full h-full object-cover">`;
+    }
   }
 }
 
@@ -2180,15 +2294,47 @@ function openPrintableActaModal(id) {
 // 12. VIEW 8: VISTA APRENDIZ & STORAGE PHOTO ENGINE
 // =========================================================================
 function renderLearnerPortal() {
-  const ficha = getCurrentFicha();
+  const isAprendiz = APP_STATE.currentUserRole === 'aprendiz';
+
+  // Toggle "Simular Aprendiz" dropdown visibility (Strictly hidden for apprentice)
+  const simularCont = document.getElementById('container-simular-aprendiz');
+  if (simularCont) {
+    if (isAprendiz) {
+      simularCont.classList.add('hidden');
+    } else {
+      simularCont.classList.remove('hidden');
+    }
+  }
+
+  // Find the active learner strictly by document for apprentice
+  let learner = null;
+  if (isAprendiz) {
+    learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc || a.usuario === APP_STATE.currentUserDoc);
+  } else {
+    learner = APP_STATE.aprendices.find(a => a.documento === APP_STATE.currentUserDoc);
+  }
+
+  if (!learner && APP_STATE.aprendices.length > 0) {
+    learner = APP_STATE.aprendices[0];
+  }
+
+  if (!learner) return;
+
+  // Sync ficha with learner's assigned ficha
+  const learnerFichaCodigo = learner.fichaCodigo || learner.ficha_codigo;
+  let ficha = null;
+  if (learnerFichaCodigo) {
+    ficha = APP_STATE.fichas.find(f => String(f.codigo).trim() === String(learnerFichaCodigo).trim());
+  }
+  if (!ficha) {
+    ficha = getCurrentFicha();
+  }
+
   const fichaAprendices = getAprendicesForFicha(ficha.codigo);
   const fichaCompetencias = getCompetenciasForFicha(ficha.codigo);
 
-  const learner = fichaAprendices.find(a => a.documento === APP_STATE.currentUserDoc) || fichaAprendices[0] || APP_STATE.aprendices[0];
-  if (!learner) return;
-
   const selLearner = document.getElementById('select-active-learner-view');
-  if (selLearner) {
+  if (selLearner && !isAprendiz) {
     selLearner.innerHTML = fichaAprendices.map(a => `
       <option value="${a.documento}" ${a.documento === learner.documento ? 'selected' : ''}>
         ${a.nombres} ${a.apellidos} (${a.documento})
@@ -2198,7 +2344,7 @@ function renderLearnerPortal() {
 
   document.getElementById('portal-aprendiz-name').textContent = `${learner.nombres} ${learner.apellidos}`;
   document.getElementById('portal-aprendiz-doc').textContent = learner.documento;
-  document.getElementById('portal-aprendiz-email').textContent = learner.correo;
+  document.getElementById('portal-aprendiz-email').textContent = learner.correo || 'aprendiz@misena.edu.co';
   document.getElementById('portal-aprendiz-ficha-badge').textContent = `Ficha ${ficha.codigo} • ${ficha.programa || 'ADSO'}`;
 
   const avatar = document.getElementById('portal-aprendiz-avatar');
@@ -2260,6 +2406,9 @@ function renderLearnerPortal() {
 }
 
 function changeLearnerPortalView(doc) {
+  if (APP_STATE.currentUserRole === 'aprendiz') {
+    return;
+  }
   APP_STATE.currentUserDoc = doc;
   renderLearnerPortal();
 }
@@ -2522,4 +2671,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await fetchRealDataFromSupabase();
   renderAllViews();
+
+  if (APP_STATE.isLoggedIn) {
+    if (APP_STATE.currentUserRole === 'aprendiz') {
+      navigateToView('vista-aprendiz');
+    } else {
+      navigateToView(currentActiveView || 'panel');
+    }
+  }
 });
